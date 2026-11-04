@@ -27,3 +27,7 @@ V `main.js` je 8 vlastních abstraktních obrázků kreslených za běhu. Skute�
 ## Výkon
 
 Lighthouse (lokálně): mobil i desktop 100 / 100 / 100 / 100 — FCP 0,6 s, LCP 1,1 s, TBT 50 ms, CLS 0 (mobil).
+
+## Fonty
+
+Bebas Neue (OFL) je v `src/fonts/bebas-neue/` a `src/css/bebas-neue.css`, zatím nikde nepoužitý. Použití: `@import url('css/bebas-neue.css');` a `font-family: BebasNeue-Regular;`.

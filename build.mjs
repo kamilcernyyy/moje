@@ -1,0 +1,18 @@
+// node build.mjs → dist/ (minified JS, absolute URLs set to the production domain)
+import fs from 'fs'; import path from 'path'; import { transformSync } from 'esbuild';
+
+// Vercel sets VERCEL_PROJECT_PRODUCTION_URL (custom domain once one is added); SITE_URL overrides it
+const host = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || 'grafysta.cz';
+const site = 'https://' + host.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+fs.rmSync('dist', { recursive: true, force: true });
+fs.cpSync('src', 'dist', { recursive: true });
+for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js']) {
+  const code = fs.readFileSync(path.join('src', f), 'utf8');
+  fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
+}
+for (const f of ['index.html', 'robots.txt', 'sitemap.xml', 'llms.txt']) {
+  const p = path.join('dist', f);
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replaceAll('https://grafysta.cz', site));
+}
+console.log('dist ok →', site);

@@ -1,0 +1,31 @@
+# Grafysta
+
+> Nezávislé grafické studio z Olomouckého kraje (Česká republika). Navrhuje a staví weby na míru, vizuální identity a loga, motion grafiku a tiskové materiály pro firmy, kavárny, restaurace, školy a eventová místa po celém Česku.
+
+## Služby
+- Weby na míru: návrh, vývoj, optimalizace rychlosti, SEO a strukturovaná data
+- Vizuální identita a logo: logomanuál, sociální sítě, šablony
+- Motion grafika: animované reklamy, videa, animované weby
+- Tiskoviny: vizitky, nabídky, sazba publikací (PDF/X)
+
+## Vybrané práce
+- Kamstav (kamenné stavby) — web a logo
+- Kavárna Paulus, Svatý Kopeček — web
+- Bistro Paulus, Olomouc — redesign webu
+- ŠEBELA TOOL — firemní web
+- Kadeřnictví TOM, Olomouc — web
+- Pivnice U Brzusků, Olomouc — web
+- SF Welding — web
+- DD Sirup — brand a produktová stránka
+- Škola Populo — kampaň a motion grafika
+- Salzerova reduta — audit webu
+- HP Domy — motion a prodejní landing page
+- JK Santé — redesign webu
+- Navždy spolu — vizuální identita
+- Street Bar — brand a maskot
+- Dračí doupě — kronika, sazba pro tisk
+- P+Sch catering — cenová nabídka
+
+## Odkazy
+- [Úvodní stránka a portfolio](https://grafysta.cz/): přehled studia a vybraných prací
+- [Mapa webu](https://grafysta.cz/sitemap.xml)

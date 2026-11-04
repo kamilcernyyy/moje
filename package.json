@@ -1,0 +1,8 @@
+{
+  "name": "grafysta-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "devDependencies": { "esbuild": "^0.25.0" }
+}

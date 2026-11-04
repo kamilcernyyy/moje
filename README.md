@@ -1,57 +1,29 @@
-# Grafysta — portfolio (headpage)
+# Grafysta — Depth Ribbon
 
-Úvodní stránka s **Depth Ribbon** efektem: stuha náhledů prací vinoucí se 3D prostorem.
-Vlastní WebGL2 implementace podle API React Bits Pro Depth Ribbon — bez three.js, bez Reactu, bez licenčního klíče.
+Celoobrazovková replika komponenty **Depth Ribbon** (React Bits Pro, `@reactbits-starter/depth-ribbon-tw`) se stejnými výchozími props:
+`count 72, path loop, tour cycle, interval 9 s, speed 0.6, cardSize 0.72, aspect 1, radius 0.12, offset 1, fov 60,
+fog 1, thread 0.3, shadow 0.5, accentColor #B19EEF, background #0a0a0a`, popisek dole uprostřed, klik = přiblížení,
+podržení = přehled, tažení a kolečko = posun, Esc = zpět, `prefers-reduced-motion` = zastaveno.
+
+Vlastní WebGL2 implementace bez three.js a bez licenčního klíče; renderer běží ve Web Workeru (OffscreenCanvas),
+s fallbackem na hlavní vlákno.
 
 ## Struktura
 
 ```
-src/                     zdroj (upravuj tady)
-  index.html             markup, kritické CSS, meta/OG, JSON-LD
-  assets/js/ribbon-core.js   WebGL renderer (běží ve Web Workeru přes OffscreenCanvas)
-  assets/js/ribbon.js        ovladač na stránce: canvas, vstupy, artwork, fallback na main thread
-  assets/js/main.js          data prací, generované plakáty, UI, index prací
-  assets/fonts/          self-hosted Instrument Serif, Geist, Geist Mono (latin + latin-ext)
-  assets/vendor/gsap.min.js
-  robots.txt, sitemap.xml, llms.txt, site.webmanifest, favicon.svg
-dist/                    hotový build k nasazení (minifikované JS)
-build.mjs                npm run build → dist/  (Vercel to dělá sám)
-vercel.json              build, výstup dist/, cache a bezpečnostní hlavičky
+src/index.html                 stránka (jen komponenta) + neviditelné SEO meta
+src/assets/js/ribbon-core.js   WebGL renderer
+src/assets/js/ribbon.js        komponenta: DOM, popisek, vstupy, worker
+src/assets/js/main.js          obrázky karet + props
+src/assets/ribbon-poster*.webp první snímek (přehled) — okamžitý obsah při načtení, pak crossfade do živé scény
+build.mjs                      npm run build → dist/ (Vercel to dělá sám)
 ```
 
-## Nasazení
+## Obrázky karet
 
-Push do `main` → Vercel spustí `npm run build` a nasadí `dist/`.
-Absolutní URL (canonical, OG, sitemap, robots, llms.txt) se při buildu přepíšou na produkční doménu projektu
-(`VERCEL_PROJECT_PRODUCTION_URL`). Až přidáš vlastní doménu (např. grafysta.cz), přepne se to samo při dalším deployi.
-Ručně jde doménu vynutit proměnnou `SITE_URL`.
-
-## Výměna náhledů za skutečné práce
-
-V `src/assets/js/main.js` v poli `WORKS` přidej položce `src` (poměr 4:5, ideálně 1024×1280 WebP/JPG):
-
-```js
-{ title: 'Kamstav', sub: 'Web & logo · kamenné stavby', tag: 'Web', bg: '#1E3BB3', src: 'assets/works/kamstav.webp', ... }
-```
-
-Položka se `src` použije obrázek místo vygenerovaného plakátu; `bg` zůstává jako barva, než se obrázek načte.
-Pak commit + push.
-
-## Nastavení stuhy
-
-V `main.js` → `new DepthRibbon(stage, { ... })`. Stejné props jako React Bits Pro:
-`count, path ('loop'|'knot'|'wave'), tour ('cycle'|'ride'|'overview'), interval, speed, cardSize, aspect,
-radius, offset, fov, fog, thread, shadow, accentColor, backgroundColor, focusOnClick, holdToReveal,
-draggable, wheel, pauseOnHover, seed, paused, dpr`.
-API: `focusItem(i)`, `release()`, `travel(n)`, `reveal()`, `destroy()`.
-
-Ovládání: tažení = posun s inercí, kolečko = posun, podržení = přehled celé stuhy (tažením otáčíš),
-klik = přiblížení práce s popiskem, Esc = zpět, šipky = o kartu dál/zpět. `prefers-reduced-motion` stuhu zastaví.
+V `main.js` je 8 vlastních abstraktních obrázků kreslených za běhu. Skutečné obrázky: položce dej
+`src: 'assets/works/nazev.webp'` (čtverec, ideálně 1024×1024) místo `draw`, plus `title` a `subtitle` pro popisek.
 
 ## Výkon
 
-Lighthouse (lokálně, gzip): mobil 100 / 100 / 100 / 100, desktop 100 / 100 / 100 / 100. LCP 0,7 s, TBT 60 ms, CLS 0.
-- WebGL běží ve Web Workeru → hlavní vlákno zůstává volné (TBT, INP).
-- Úvodní animace nadpisu je CSS, takže LCP nečeká na JavaScript.
-- Stuha startuje až po `load` + idle; plakáty se kreslí po jednom v idle slotech.
-- Adaptivní rozlišení: když snímky zdražují, render scale klesá (min. 0,5×); softwarové GL dostane nižší rozpočet.
+Lighthouse (lokálně): mobil i desktop 100 / 100 / 100 / 100 — FCP 0,6 s, LCP 1,1 s, TBT 50 ms, CLS 0 (mobil).

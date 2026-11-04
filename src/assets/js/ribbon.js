@@ -9,14 +9,14 @@
   'use strict';
 
   var DEFAULTS = {
-    items: [],               // { title, sub, bg, src? | draw?(ctx, w, h, item, i) }
-    count: 64,
+    items: [],               // { src? | draw?(ctx, w, h, item, i), alt, title?, subtitle?, bg? }
+    count: 72,
     path: 'loop',            // loop | knot | wave
     tour: 'cycle',           // cycle | ride | overview
     interval: 9,
     speed: 0.6,              // cards per second
     cardSize: 0.72,
-    aspect: 0.8,
+    aspect: 1,
     radius: 0.12,
     offset: 1,
     fov: 60,
@@ -24,8 +24,10 @@
     thread: 0.3,
     shadow: 0.5,
     accentColor: '#B19EEF',
-    backgroundColor: '#ffffff',
-    inkColor: '#141519',
+    backgroundColor: '#0a0a0a',
+    captions: true,
+    ariaLabel: 'Depth ribbon gallery. Scroll or drag to travel, hold to see the whole path, click an image to bring it close.',
+    inkColor: '#000000',
     focusOnClick: true,
     holdToReveal: true,
     interactive: true,
@@ -35,7 +37,7 @@
     seed: 0,
     paused: false,
     dpr: 2,
-    cell: [512, 640],
+    cell: [512, 512],
     workerUrl: null,         // url of ribbon-core.js; null = main thread
     coreUrl: null,           // same file, loaded on demand for the fallback
     onFocusChange: null,     // (item, itemIndex, cardIndex)
@@ -47,7 +49,7 @@
 
   var KEYS = ['count', 'path', 'tour', 'interval', 'speed', 'cardSize', 'aspect', 'radius', 'offset', 'fov', 'fog', 'thread', 'shadow',
     'accentColor', 'backgroundColor', 'inkColor', 'focusOnClick', 'holdToReveal', 'interactive', 'draggable', 'wheel', 'pauseOnHover',
-    'seed', 'paused', 'dpr', 'cell'];
+    'seed', 'paused', 'dpr', 'cell', 'hq'];
 
   function idle(fn) { return global.requestIdleCallback ? global.requestIdleCallback(fn, { timeout: 250 }) : setTimeout(fn, 32); }
 
@@ -63,6 +65,7 @@
     this._queue = [];
     this._dead = false;
 
+    this._makeDom();
     this._makeCanvas();
     this._bind();
 
@@ -72,12 +75,57 @@
 
   var P = DepthRibbon.prototype;
 
+  // root, canvas layer, screen-reader list and caption, as in the original component
+  P._makeDom = function () {
+    var o = this.o, el = this.el;
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-roledescription', 'gallery');
+    el.setAttribute('aria-label', o.ariaLabel);
+    el.setAttribute('tabindex', '0');
+    el.style.position = el.style.position || 'relative';
+    el.style.overflow = 'hidden';
+    el.style.minHeight = '420px';
+    el.style.backgroundColor = o.backgroundColor;
+    this.layer = document.createElement('div');
+    this.layer.style.cssText = 'position:absolute;inset:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;opacity:0;transition:opacity 700ms ease;';
+    el.appendChild(this.layer);
+    var ul = document.createElement('ul');
+    ul.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+    o.items.forEach(function (it) {
+      var li = document.createElement('li');
+      li.textContent = (it.title || it.alt) + ': ' + (it.alt || it.title) + (it.subtitle ? ', ' + it.subtitle.charAt(0).toLowerCase() + it.subtitle.slice(1) : '');
+      ul.appendChild(li);
+    });
+    el.appendChild(ul);
+    if (o.captions) {
+      var cap = this.cap = document.createElement('div');
+      cap.setAttribute('aria-live', 'polite');
+      cap.style.cssText = 'position:absolute;left:0;right:0;bottom:6%;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;opacity:0;transform:translateY(8px);' +
+        'transition:opacity 420ms, transform 520ms cubic-bezier(0.22,1,0.36,1);color:rgba(255,255,255,0.94);text-align:center;';
+      this.capT = document.createElement('span'); this.capT.style.cssText = 'font-size:15px;font-weight:600;line-height:1.35;';
+      this.capS = document.createElement('span'); this.capS.style.cssText = 'font-size:13px;opacity:0.6;line-height:1.35;';
+      cap.appendChild(this.capT); cap.appendChild(this.capS); el.appendChild(cap);
+    }
+  };
+  P._caption = function (item) {
+    if (!this.cap) return;
+    var c = this.cap;
+    if (item) {
+      this.capT.textContent = item.title || ''; this.capS.textContent = item.subtitle || '';
+      c.style.transition = 'opacity 420ms 520ms, transform 520ms cubic-bezier(0.22,1,0.36,1) 520ms';
+      c.style.opacity = '1'; c.style.transform = 'translateY(0px)';
+    } else {
+      c.style.transition = 'opacity 420ms, transform 520ms cubic-bezier(0.22,1,0.36,1)';
+      c.style.opacity = '0'; c.style.transform = 'translateY(8px)';
+    }
+  };
+
   P._makeCanvas = function () {
     if (this.canvas) this.canvas.remove();
     var c = this.canvas = document.createElement('canvas');
     c.setAttribute('aria-hidden', 'true');
-    c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none;cursor:grab;';
-    this.el.appendChild(c);
+    c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
+    this.layer.appendChild(c);
   };
 
   P._size = function () {
@@ -132,11 +180,17 @@
     switch (m.type) {
       case 'init': this._cell = [m.cellW, m.cellH]; this._paintAll(); break;
       case 'error': if (this.worker) this._fallback(m.message); else this._fail(m.message); break;
-      case 'focus': if (o.onFocusChange) o.onFocusChange(m.item >= 0 ? o.items[m.item] : null, m.item, m.card); break;
+      case 'focus': this._caption(m.item >= 0 ? o.items[m.item] : null); if (o.onFocusChange) o.onFocusChange(m.item >= 0 ? o.items[m.item] : null, m.item, m.card); break;
       case 'travel': if (o.onTravel) o.onTravel(o.items[m.item], m.item, m.card); break;
       case 'mode': if (o.onModeChange) o.onModeChange(m.mode); break;
       case 'cursor': this.canvas.style.cursor = m.value; break;
-      case 'ready': if (o.onReady) o.onReady(); break;
+      case 'ready':
+        // crossfade from the static first frame (poster) to the live scene
+        var layer = this.layer, poster = this.el.querySelector('[data-ribbon-poster]');
+        requestAnimationFrame(function () { layer.style.opacity = '1'; });
+        if (poster) setTimeout(function () { poster.remove(); }, 900);
+        if (o.onReady) o.onReady();
+        break;
     }
   };
 
@@ -167,7 +221,7 @@
           img.onerror = function () { deliver(idx); };
           img.src = it.src;
         } else {
-          if (it.draw) { ctx.save(); ctx.scale(W / 512, H / 640); it.draw(ctx, 512, 640, it, idx); ctx.restore(); }
+          if (it.draw) { ctx.save(); it.draw(ctx, W, H, it, idx); ctx.restore(); }
           deliver(idx);
         }
       });

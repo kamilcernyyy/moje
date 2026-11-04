@@ -52,7 +52,7 @@
 
   /* ---------- paths ---------- */
   var PATHS = {
-    loop: function (t) { return [8.4 * Math.sin(t), 1.45 * Math.cos(t), 4.2 * Math.sin(2 * t)]; },        // figure-eight over itself
+    loop: function (t) { return [10.5 * Math.sin(t), 1.7 * Math.cos(t), 3.1 * Math.sin(2 * t)]; },        // figure-eight over itself
     knot: function (t) { var s = 2.5; return [s * (Math.sin(t) + 2 * Math.sin(2 * t)), -s * 0.75 * Math.sin(3 * t), s * (Math.cos(t) - 2 * Math.cos(2 * t))]; },
     wave: function (t) { return [8.5 * Math.cos(t), 1.5 * Math.sin(3 * t), 8.5 * Math.sin(t)]; }
   };
@@ -154,7 +154,7 @@
 
     var dbg = gl.getExtension('WEBGL_debug_renderer_info');
     var renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : '';
-    this.soft = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+    this.soft = !o.hq && /swiftshader|llvmpipe|software|basic render/i.test(renderer);
     this.dprCap = this.soft ? Math.min(o.dpr, 0.6) : o.dpr;
     this.cellW = this.soft ? o.cell[0] / 2 : o.cell[0];
     this.cellH = this.soft ? o.cell[1] / 2 : o.cell[1];
@@ -165,7 +165,7 @@
       u: 0, vel: 0, speed: 0,
       m: o.tour === 'ride' || o.paused ? 0 : 1,  // overview weight
       f: 0,                                      // focus weight
-      yaw: 0.6,
+      yaw: 0.2,
       hovered: -1, focused: -1, fIndex: -1, focusSide: 1,
       rideTime: 0, phase: 'intro', holding: false, visible: true
     };
@@ -182,7 +182,6 @@
     this._loop = function () { if (self._dead) return; self._frame(); self._raf(self._loop); };
     this._raf(this._loop);
 
-    if (o.tour === 'cycle' && !o.paused) this._later(1.6, function () { self._dive(2.6); });
     this.emit('init', { cellW: this.cellW, cellH: this.cellH, soft: this.soft });
   }
 
@@ -247,8 +246,9 @@
     this.cards = [];
     for (i = 0; i < N; i++) {
       var sm = this._sample(i);
-      center.set(sm.p, i * 3); T.set(sm.t, i * 3); U.set(sm.up, i * 3); tex[i] = order[i];
-      this.cards.push({ c: sm.p, t: sm.t, up: sm.up, n: norm(cross(sm.t, sm.up)), item: order[i] });
+      // cards stand across the path like a deck: width along the side vector, facing along the path
+      center.set(sm.p, i * 3); T.set(sm.s, i * 3); U.set(sm.up, i * 3); tex[i] = order[i];
+      this.cards.push({ c: sm.p, t: sm.s, up: sm.up, n: norm(cross(sm.s, sm.up)), item: order[i] });
     }
     this._inst = { center: center, T: T, U: U, tex: tex, state: new Float32Array(N) };
   };
@@ -311,7 +311,9 @@
     if (++this._received >= this.o.items.length) {
       gl.generateMipmap(gl.TEXTURE_2D);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      this.emit('ready', {});
+      this._ready = true;
+      var self = this;
+      if (this.o.tour === 'cycle' && !this.o.paused) this._later(1.4, function () { self._dive(2.6); });
     }
   };
 
@@ -323,7 +325,7 @@
     this.aspectR = this.w / this.h;
     this.fovR = this.o.fov * Math.PI / 180;
     var hfov = 2 * Math.atan(Math.tan(this.fovR / 2) * this.aspectR);
-    this.overDist = (this.path.r + this.cardH) / Math.sin(Math.min(this.fovR, hfov) / 2) * 0.8;
+    this.overDist = (this.path.r + this.cardH) / Math.sin(Math.min(this.fovR, hfov) / 2) * 1.0;
     this.proj = perspective(this.fovR, this.aspectR, 0.05, 400);
   };
 
@@ -496,23 +498,25 @@
   /* ---------- per frame ---------- */
   P._rideCam = function (u) {
     var o = this.o, sp = this.spacing;
-    var a = this._sample(u), b = this._sample(u + 3.2);
-    var D = 1.55 * sp * o.offset, H = 0.62 * sp * o.offset;
+    var a = this._sample(u - 1), b = this._sample(u + 6);
+    var D = 1.7 * sp * o.offset, H = 1.0 * sp * o.offset;
     var pos = add(a.p, add(mul(a.s, D), mul(a.up, H)));
-    var lift = this.aspectR < 0.8 ? 1.2 : 1.05;   // pitch down so the ribbon sits in the upper frame, clear of the headline
-    var target = add(add(b.p, mul(b.s, D * 0.12)), mul(a.up, -lift * sp));
-    return { pos: pos, target: target, up: norm(add(mul(a.up, 0.55), [0, 0.45, 0])) };
+    var target = add(b.p, add(mul(b.s, -D * 1.35), mul(b.up, -H * 0.75)));
+    // roll the view so the ribbon climbs diagonally from lower left to upper right
+    var up = norm(add(mul(a.up, 0.6), [0, 0.4, 0])), f = norm(sub(target, pos)), roll = 0.2;
+    up = norm(add(mul(up, Math.cos(roll)), mul(cross(f, up), Math.sin(roll))));
+    return { pos: pos, target: target, up: up };
   };
   P._overCam = function () {
-    var d = this.overDist, y = this.s.yaw, el = 0.52;
-    return { pos: [Math.sin(y) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(y) * Math.cos(el) * d], target: [0, this.aspectR < 0.8 ? -3.2 : -1.6, 0], up: [0, 1, 0] };
+    var d = this.overDist, y = this.s.yaw, el = 0.45;
+    return { pos: [Math.sin(y) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(y) * Math.cos(el) * d], target: [0, 0, 0], up: [0, 1, 0] };
   };
   P._focusCam = function (i) {
     var c = this.cards[i], th = Math.tan(this.fovR / 2), portrait = this.aspectR < 0.8;
-    var dh = this.cardH / ((portrait ? 0.42 : 0.6) * 2 * th), dw = this.cardW / (0.78 * 2 * th * this.aspectR);
+    var dh = this.cardH / ((portrait ? 0.5 : 0.66) * 2 * th), dw = this.cardW / (0.82 * 2 * th * this.aspectR);
     var n = mul(c.n, this.s.focusSide);
     var center = add(c.c, mul(n, 0.16 * this.cardH));
-    var shift = mul(c.up, -this.cardH * (portrait ? 0.28 : 0.06));
+    var shift = mul(c.up, -this.cardH * 0.04);
     return { pos: add(add(center, mul(n, Math.max(dh, dw))), shift), target: add(center, shift), up: c.up };
   };
 
@@ -545,7 +549,7 @@
     this.cam = { pos: pos, target: tgt, up: up };
 
     var sp = this.spacing, fg = Math.max(0.05, o.fog);
-    var rideFog = [1.4 * sp, (17 * sp) / fg], overFog = [this.overDist + this.path.r * 0.15, this.overDist + this.path.r * 3.4 / fg];
+    var rideFog = [2.5 * sp, (26 * sp) / fg], overFog = [this.overDist + this.path.r * 0.4, this.overDist + this.path.r * 3.6 / fg];
     var fogR = [rideFog[0] + (overFog[0] - rideFog[0]) * m, rideFog[1] + (overFog[1] - rideFog[1]) * m];
     fogR[0] += 2 * st.f; fogR[1] += 4 * st.f;
     this._fog = fogR;
@@ -565,6 +569,7 @@
 
     var t0 = performance.now();
     this._draw();
+    if (this._ready && !this._shown) { this._shown = true; this.emit('ready', {}); }   // first frame with artwork
     this._adapt(performance.now() - t0, dt);
   };
 

@@ -8,8 +8,8 @@
 <link rel="canonical" href="https://grafysta.cz/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Grafysta">
-<meta name="theme-color" content="#E7E8EB">
-<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="color-scheme" content="dark">
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="cs_CZ">
@@ -20,249 +20,19 @@
 <meta property="og:image" content="https://grafysta.cz/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Stuha s náhledy prací studia Grafysta vinoucí se 3D prostorem">
+<meta property="og:image:alt" content="Stuha obrázků vinoucí se 3D prostorem">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 
-<link rel="preload" href="assets/fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-
-
 <style>
-/* Layout: one-screen print proof. Full-bleed WebGL ribbon, crop marks in the corners,
-   slug lines top and bottom, headline set bottom-left like a cover title. */
-@font-face { font-family: "Instrument Serif"; font-style: normal; font-weight: 400; font-display: swap;
-  src: url(assets/fonts/instrument-serif-latin-400-normal.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Instrument Serif"; font-style: normal; font-weight: 400; font-display: swap;
-  src: url(assets/fonts/instrument-serif-latin-ext-400-normal.woff2) format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; font-display: swap;
-  src: url(assets/fonts/instrument-serif-latin-400-italic.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; font-display: swap;
-  src: url(assets/fonts/instrument-serif-latin-ext-400-italic.woff2) format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: "Geist"; font-style: normal; font-weight: 100 900; font-display: swap;
-  src: url(assets/fonts/geist-latin-wght-normal.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Geist"; font-style: normal; font-weight: 100 900; font-display: swap;
-  src: url(assets/fonts/geist-latin-ext-wght-normal.woff2) format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 100 900; font-display: swap;
-  src: url(assets/fonts/geist-mono-latin-wght-normal.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 100 900; font-display: swap;
-  src: url(assets/fonts/geist-mono-latin-ext-wght-normal.woff2) format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-
-:root {
-  /* proof paper, press ink, process colours */
-  --paper: #E7E8EB;
-  --paper-2: #DCDEE2;
-  --ink: #141519;
-  --ink-2: #4E525C;
-  --rule: rgba(20, 21, 25, .16);
-  --magenta: #E5007D;
-  --cyan: #00A0E3;
-  --yellow: #FFE600;
-
-  --display: "Instrument Serif", "Times New Roman", Georgia, serif;
-  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-
-  --step--1: .75rem;
-  --step-0: .9375rem;
-  --step-1: 1.125rem;
-  --step-h1: clamp(3.4rem, 9.2vw, 9.5rem);
-  --step-cap: clamp(2.6rem, 6vw, 5.5rem);
-
-  --ease-out: cubic-bezier(.2, .8, .2, 1);
-  --gutter: clamp(16px, 3vw, 40px);
-  color-scheme: light;
-}
-
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0; background: var(--paper); color: var(--ink);
-  font: 400 var(--step-0)/1.5 var(--sans);
-  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
-  overflow: hidden;
-}
-a { color: inherit; }
-button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-
-.app {
-  position: relative; height: 100%; min-height: 520px;
-  display: grid; grid-template-rows: auto 1fr auto;
-  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
-  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
-  padding-block: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-bottom, 0px));
-  isolation: isolate;
-}
-
-/* ribbon stage */
-.ribbon { position: absolute; inset: 0; z-index: -2; opacity: 0; background: var(--paper); }
-.scrim {
-  position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    linear-gradient(to top, var(--paper) 0%, rgba(231, 232, 235, .78) 20%, rgba(231, 232, 235, 0) 46%),
-    linear-gradient(to bottom, rgba(231, 232, 235, .85) 0%, rgba(231, 232, 235, 0) 14%);
-  transition: opacity .6s var(--ease-out);
-}
-.is-focus .scrim { opacity: .8; }
-
-/* crop marks */
-.crop { position: absolute; width: 18px; height: 18px; pointer-events: none; border-color: var(--ink); opacity: .45; }
-.crop-tl { top: calc(8px + env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); border-top: 1px solid; border-left: 1px solid; }
-.crop-tr { top: calc(8px + env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); border-top: 1px solid; border-right: 1px solid; }
-.crop-bl { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid; border-left: 1px solid; }
-.crop-br { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid; border-right: 1px solid; }
-
-/* slug bars */
-.bar { display: flex; align-items: center; gap: 24px; min-width: 0; }
-.bar-top { justify-content: space-between; padding-block: 10px; }
-.brand { font: 400 1.9rem/1 var(--display); letter-spacing: -.01em; text-decoration: none; display: inline-flex; align-items: baseline; gap: 10px; }
-.brand small { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
-.nav { display: flex; gap: 28px; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.nav a { text-decoration: none; padding-block: 6px; background: linear-gradient(var(--ink), var(--ink)) 0 100% / 0 1px no-repeat; transition: background-size .25s var(--ease-out); }
-@media (hover: hover) { .nav a:hover { background-size: 100% 1px; } }
-
-.btn {
-  display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
-  font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none;
-  padding: 13px 16px; border-radius: 2px; border: 1px solid var(--ink);
-  transition: background-color .2s var(--ease-out), color .2s var(--ease-out), transform .2s var(--ease-out);
-}
-.btn-ink { background: var(--ink); color: var(--paper); }
-.btn-ghost { background: transparent; }
-.btn-ghost span { color: var(--magenta); }
-@media (hover: hover) {
-  .btn-ink:hover { background: var(--magenta); border-color: var(--magenta); color: #fff; }
-  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
-}
-.btn:active { transform: translateY(1px); }
-.link {
-  font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
-  background: none; border: 0; padding: 6px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px;
-}
-@media (hover: hover) { .link:hover { color: var(--magenta); } }
-
-/* hero copy */
-.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: end; align-content: end; gap: 24px 48px; padding-bottom: 18px; pointer-events: none; min-height: 0; }
-.hero a, .hero button { pointer-events: auto; }
-.copy, .aside { transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); }
-.is-focus .copy, .is-focus .aside { opacity: 0; transform: translateY(10px); }
-.is-focus .copy *, .is-focus .aside * { pointer-events: none; }
-.eyebrow { margin: 0 0 14px; font: 500 var(--step--1)/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); display: flex; align-items: center; gap: 10px; }
-.eyebrow::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--magenta); }
-h1 { margin: 0; font: 400 var(--step-h1)/.88 var(--display); letter-spacing: -.025em; text-wrap: balance; }
-h1 em { font-style: italic; letter-spacing: -.01em; }
-.h1-line { display: block; overflow: hidden; padding-block: .14em .16em; margin-block: -.14em -.16em; }
-.h1-line > span { display: inline-block; }
-.aside { max-width: 30rem; justify-self: end; display: grid; gap: 22px; padding-bottom: .6rem; }
-.lead { margin: 0; font-size: var(--step-1); line-height: 1.5; color: var(--ink); max-width: 38ch; text-wrap: pretty; }
-.ctas { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
-
-/* caption for a card brought close */
-.caption { position: absolute; left: 0; bottom: 18px; margin: 0; display: grid; gap: 6px; max-width: min(36rem, 100%); opacity: 0; transform: translateY(10px); transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); pointer-events: none; }
-.is-focus .caption { opacity: 1; transform: none; transition-delay: .25s; }
-.is-focus .caption button { pointer-events: auto; }
-.caption p { margin: -.18em 0 0; padding-top: .18em; overflow: hidden; }
-.cap-line { display: inline-block; }
-.cap-num { font: 500 var(--step--1)/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
-.cap-title { font: 400 var(--step-cap)/.95 var(--display); letter-spacing: -.02em; padding-bottom: .05em; }
-.cap-sub { font-size: var(--step-1); color: var(--ink-2); }
-.caption .link { justify-self: start; margin-top: 10px; }
-
-/* bottom slug */
-.bar-bottom { justify-content: space-between; border-top: 1px solid var(--rule); padding-top: 12px; font: 500 var(--step--1)/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.frame { margin: 0; display: flex; align-items: baseline; gap: 8px; min-width: 0; font-variant-numeric: tabular-nums; }
-.frame .lbl { color: var(--ink-2); }
-.frame #frame-count { color: var(--magenta); }
-.frame .of { color: var(--ink-2); }
-.frame #frame-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch; }
-.hints { margin: 0; display: flex; gap: 22px; color: var(--ink-2); }
-.hints span + span::before { content: "/"; margin-right: 22px; opacity: .5; }
-.right { display: flex; align-items: center; gap: 18px; }
-.slug { color: var(--ink-2); text-transform: none; letter-spacing: .02em; }
-.cmyk { display: inline-flex; }
-.cmyk i { width: 11px; height: 11px; display: block; }
-.cmyk i:nth-child(1) { background: var(--cyan); }
-.cmyk i:nth-child(2) { background: var(--magenta); }
-.cmyk i:nth-child(3) { background: var(--yellow); }
-.cmyk i:nth-child(4) { background: var(--ink); }
-.bar-bottom .btn { padding: 10px 12px; }
-
-/* index of works */
-.panel {
-  position: fixed; inset: 0 0 0 auto; z-index: 20; width: min(440px, 100%);
-  background: var(--paper); border-left: 1px solid var(--ink);
-  display: grid; grid-template-rows: auto 1fr;
-  padding-block: max(18px, env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-bottom, 0px));
-  padding-left: 24px; padding-right: max(24px, env(safe-area-inset-right, 0px));
-  transform: translateX(102%); transition: transform .3s var(--ease-out);
-}
-.is-index .panel { transform: none; }
-.panel-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--ink); }
-.panel h2 { margin: 0; font: 400 2.2rem/1 var(--display); letter-spacing: -.01em; }
-.panel ol { list-style: none; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; }
-.work {
-  width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--rule); cursor: pointer;
-  display: grid; grid-template-columns: 2.6rem 1fr; grid-template-areas: "n t" "n s"; gap: 2px 10px; padding: 14px 0;
-}
-.work-n { grid-area: n; font: 500 var(--step--1)/1.9 var(--mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.work-t { grid-area: t; font: 400 1.6rem/1.1 var(--display); transition: transform .22s var(--ease-out), color .22s var(--ease-out); }
-.work-s { grid-area: s; font-size: .8125rem; color: var(--ink-2); }
-@media (hover: hover) { .work:hover .work-t { transform: translateX(6px); color: var(--magenta); } }
-.panel-veil { position: fixed; inset: 0; z-index: 19; background: rgba(20, 21, 25, .18); opacity: 0; pointer-events: none; transition: opacity .3s var(--ease-out); }
-.is-index .panel-veil { opacity: 1; pointer-events: auto; }
-
-/* intro: CSS keyframes from first paint (no JS on the critical path) */
-@keyframes rise { from { transform: translateY(108%); } to { transform: none; } }
-@keyframes lift { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes appear { from { opacity: 0; } }
-@media (prefers-reduced-motion: no-preference) {
-  .h1-line > span { animation: rise 1s var(--ease-out) both; }
-  .h1-line + .h1-line > span { animation-delay: .09s; }
-  .reveal { animation: lift .7s var(--ease-out) both; animation-delay: var(--d, .35s); }
-  .crop { animation: appear .8s var(--ease-out) .4s both; }
-}
-
-/* no WebGL: the index becomes the page */
-.no-webgl .ribbon, .no-webgl .hints { display: none; }
-.no-webgl .panel { position: absolute; transform: none; inset: 76px max(var(--gutter), env(safe-area-inset-right, 0px)) 70px auto; border: 1px solid var(--rule); height: auto; }
-.no-webgl #close-index { display: none; }
-
-@media (max-width: 1100px) { .slug { display: none; } }
-@media (max-width: 900px) {
-  .hints { display: none; }
-  .hero { grid-template-columns: 1fr; gap: 18px; }
-  .aside { justify-self: start; }
-}
-@media (max-width: 640px) {
-  .nav { display: none; }
-  .bar-top .btn { padding: 11px 12px; }
-  .brand small { display: none; }
-  .lead { font-size: var(--step-0); }
-  .lead-more { display: none; }
-  .eyebrow { margin-bottom: 10px; }
-  .frame .lbl { display: none; }
-  .frame #frame-title { max-width: 14ch; }
-  .cmyk { display: none; }
-}
-@media (max-height: 560px) and (min-width: 641px) { .lead { display: none; } }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
-  .ribbon { opacity: 1; }
-}
+  html, body { height: 100%; margin: 0; background: #0a0a0a; color: #fff; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; overflow: hidden; }
+  [data-ribbon-poster] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; animation: rp-in 1s ease both; }
+  @keyframes rp-in { from { filter: brightness(.12); } }
+  #depth-ribbon { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background-color: #0a0a0a; outline: none; }
 </style>
 
 <script type="application/ld+json">
@@ -280,17 +50,7 @@ h1 em { font-style: italic; letter-spacing: -.01em; }
       "address": { "@type": "PostalAddress", "addressRegion": "Olomoucký kraj", "addressCountry": "CZ" },
       "areaServed": { "@type": "Country", "name": "Česká republika" },
       "knowsLanguage": "cs",
-      "knowsAbout": ["Tvorba webových stránek", "Vizuální identita", "Logo design", "Motion grafika", "Tiskoviny", "SEO"],
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Služby",
-        "itemListElement": [
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Weby na míru" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Vizuální identita a logo" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Motion grafika" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Marketingové a tiskové materiály" } }
-        ]
-      }
+      "knowsAbout": ["Tvorba webových stránek", "Vizuální identita", "Logo design", "Motion grafika", "Tiskoviny"]
     },
     {
       "@type": "WebSite",
@@ -299,122 +59,13 @@ h1 em { font-style: italic; letter-spacing: -.01em; }
       "name": "Grafysta",
       "inLanguage": "cs",
       "publisher": { "@id": "https://grafysta.cz/#studio" }
-    },
-    {
-      "@type": "CollectionPage",
-      "@id": "https://grafysta.cz/#page",
-      "url": "https://grafysta.cz/",
-      "name": "Grafysta — weby, vizuální identity a motion",
-      "inLanguage": "cs",
-      "isPartOf": { "@id": "https://grafysta.cz/#web" },
-      "about": { "@id": "https://grafysta.cz/#studio" },
-      "mainEntity": {
-        "@type": "ItemList",
-        "name": "Vybrané práce",
-        "numberOfItems": 16,
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "item": { "@type": "CreativeWork", "name": "Kamstav — web a logo", "genre": "Web" } },
-          { "@type": "ListItem", "position": 2, "item": { "@type": "CreativeWork", "name": "Kavárna Paulus — web", "genre": "Web" } },
-          { "@type": "ListItem", "position": 3, "item": { "@type": "CreativeWork", "name": "Bistro Paulus — redesign webu", "genre": "Web" } },
-          { "@type": "ListItem", "position": 4, "item": { "@type": "CreativeWork", "name": "ŠEBELA TOOL — firemní web", "genre": "Web" } },
-          { "@type": "ListItem", "position": 5, "item": { "@type": "CreativeWork", "name": "Kadeřnictví TOM — web", "genre": "Web" } },
-          { "@type": "ListItem", "position": 6, "item": { "@type": "CreativeWork", "name": "Pivnice U Brzusků — web", "genre": "Web" } },
-          { "@type": "ListItem", "position": 7, "item": { "@type": "CreativeWork", "name": "SF Welding — web", "genre": "Web" } },
-          { "@type": "ListItem", "position": 8, "item": { "@type": "CreativeWork", "name": "DD Sirup — brand a produktová stránka", "genre": "Brand" } },
-          { "@type": "ListItem", "position": 9, "item": { "@type": "CreativeWork", "name": "Škola Populo — kampaň a motion grafika", "genre": "Motion" } },
-          { "@type": "ListItem", "position": 10, "item": { "@type": "CreativeWork", "name": "Salzerova reduta — audit webu", "genre": "Audit" } },
-          { "@type": "ListItem", "position": 11, "item": { "@type": "CreativeWork", "name": "HP Domy — motion a prodejní landing page", "genre": "Motion" } },
-          { "@type": "ListItem", "position": 12, "item": { "@type": "CreativeWork", "name": "JK Santé — redesign webu", "genre": "Web" } },
-          { "@type": "ListItem", "position": 13, "item": { "@type": "CreativeWork", "name": "Navždy spolu — vizuální identita", "genre": "Identita" } },
-          { "@type": "ListItem", "position": 14, "item": { "@type": "CreativeWork", "name": "Street Bar — brand a maskot", "genre": "Brand" } },
-          { "@type": "ListItem", "position": 15, "item": { "@type": "CreativeWork", "name": "Dračí doupě — kronika, sazba pro tisk", "genre": "Tisk" } },
-          { "@type": "ListItem", "position": 16, "item": { "@type": "CreativeWork", "name": "P+Sch catering — cenová nabídka", "genre": "Tisk" } }
-        ]
-      }
     }
   ]
 }
 </script>
 </head>
 <body>
-<div class="app">
-  <div id="ribbon" class="ribbon" role="img" aria-label="Galerie prací Grafysta: stuha s náhledy projektů vinoucí se 3D prostorem. Tažením se posunete, podržením uvidíte celou stuhu, kliknutím přiblížíte práci."></div>
-  <div class="scrim" aria-hidden="true"></div>
-  <span class="crop crop-tl" aria-hidden="true"></span>
-  <span class="crop crop-tr" aria-hidden="true"></span>
-  <span class="crop crop-bl" aria-hidden="true"></span>
-  <span class="crop crop-br" aria-hidden="true"></span>
-
-  <header class="bar bar-top">
-    <a class="brand" href="/">Grafysta <small>Studio</small></a>
-    <nav class="nav" aria-label="Hlavní navigace">
-      <a href="#prace" data-open-index>Práce</a>
-      <a href="#sluzby">Služby</a>
-      <a href="#o-studiu">O studiu</a>
-    </nav>
-    <a class="btn btn-ink" href="#kontakt">Napsat poptávku</a>
-  </header>
-
-  <main class="hero" id="prace">
-    <div class="copy">
-      <p class="eyebrow reveal" style="--d:.2s">Grafické studio · Olomoucký kraj</p>
-      <h1><span class="h1-line"><span>Weby, identity</span></span><span class="h1-line"><span>a <em>pohyb</em>.</span></span></h1>
-    </div>
-    <div class="aside">
-      <p class="lead reveal" style="--d:.3s">Grafysta navrhuje a staví weby na míru, vizuální identity, motion grafiku a tiskoviny.<span class="lead-more"> Pro firmy, kavárny, restaurace, školy i eventová místa po celém Česku.</span></p>
-      <div class="ctas reveal" style="--d:.38s">
-        <button type="button" class="btn btn-ink" data-open-index>Projít všechny práce</button>
-        <a class="link" href="#kontakt">Napsat poptávku</a>
-      </div>
-    </div>
-
-    <figure id="caption" class="caption" aria-hidden="true" aria-live="polite">
-      <p class="cap-num"><span class="cap-line" id="cap-num"></span></p>
-      <p class="cap-title"><span class="cap-line" id="cap-title"></span></p>
-      <p class="cap-sub"><span class="cap-line" id="cap-sub"></span></p>
-      <button type="button" id="cap-close" class="link">Zpět na stuhu · Esc</button>
-    </figure>
-  </main>
-
-  <footer class="bar bar-bottom">
-    <p class="frame reveal" style="--d:.5s"><span class="lbl">Práce</span> <span id="frame-count">01</span><span class="of">/16</span> <span id="frame-title">Kamstav</span></p>
-    <p class="hints reveal" style="--d:.56s"><span>Táhni</span><span>Podrž = přehled</span><span>Klik = detail</span></p>
-    <div class="right reveal" style="--d:.62s">
-      <span class="cmyk" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <span class="slug">grafysta_portfolio_2026.indd · 1/1</span>
-      <button type="button" id="open-index" class="btn btn-ghost" aria-expanded="false" aria-controls="index-panel">Index prací <span>16</span></button>
-    </div>
-  </footer>
-
-  <div class="panel-veil" aria-hidden="true" onclick="document.getElementById('close-index').click()"></div>
-  <aside id="index-panel" class="panel" hidden aria-labelledby="index-title">
-    <div class="panel-head">
-      <h2 id="index-title">Index prací</h2>
-      <button type="button" id="close-index" class="link">Zavřít</button>
-    </div>
-    <ol id="work-list">
-      <li><button type="button" class="work" data-work="0"><span class="work-n">01</span><span class="work-t">Kamstav</span><span class="work-s">Web &amp; logo · kamenné stavby</span></button></li>
-      <li><button type="button" class="work" data-work="1"><span class="work-n">02</span><span class="work-t">Kavárna Paulus</span><span class="work-s">Web · Svatý Kopeček</span></button></li>
-      <li><button type="button" class="work" data-work="2"><span class="work-n">03</span><span class="work-t">Bistro Paulus</span><span class="work-s">Redesign webu · Olomouc</span></button></li>
-      <li><button type="button" class="work" data-work="3"><span class="work-n">04</span><span class="work-t">ŠEBELA TOOL</span><span class="work-s">Firemní web</span></button></li>
-      <li><button type="button" class="work" data-work="4"><span class="work-n">05</span><span class="work-t">Kadeřnictví TOM</span><span class="work-s">Web · barber, Olomouc</span></button></li>
-      <li><button type="button" class="work" data-work="5"><span class="work-n">06</span><span class="work-t">U Brzusků</span><span class="work-s">Web · pivnice, Olomouc</span></button></li>
-      <li><button type="button" class="work" data-work="6"><span class="work-n">07</span><span class="work-t">SF Welding</span><span class="work-s">Web · svářečské práce</span></button></li>
-      <li><button type="button" class="work" data-work="7"><span class="work-n">08</span><span class="work-t">DD Sirup</span><span class="work-s">Brand &amp; produktová stránka</span></button></li>
-      <li><button type="button" class="work" data-work="8"><span class="work-n">09</span><span class="work-t">Škola Populo</span><span class="work-s">Kampaň &amp; motion grafika</span></button></li>
-      <li><button type="button" class="work" data-work="9"><span class="work-n">10</span><span class="work-t">Salzerova reduta</span><span class="work-s">Audit webu · PDF report</span></button></li>
-      <li><button type="button" class="work" data-work="10"><span class="work-n">11</span><span class="work-t">HP Domy</span><span class="work-s">Motion &amp; prodejní landing</span></button></li>
-      <li><button type="button" class="work" data-work="11"><span class="work-n">12</span><span class="work-t">JK Santé</span><span class="work-s">Redesign webu · kosmetika</span></button></li>
-      <li><button type="button" class="work" data-work="12"><span class="work-n">13</span><span class="work-t">Navždy spolu</span><span class="work-s">Vizuální identita</span></button></li>
-      <li><button type="button" class="work" data-work="13"><span class="work-n">14</span><span class="work-t">Street Bar</span><span class="work-s">Brand &amp; maskot</span></button></li>
-      <li><button type="button" class="work" data-work="14"><span class="work-n">15</span><span class="work-t">Dračí doupě</span><span class="work-s">Kronika · sazba pro tisk</span></button></li>
-      <li><button type="button" class="work" data-work="15"><span class="work-n">16</span><span class="work-t">P+Sch catering</span><span class="work-s">Cenová nabídka · tisk</span></button></li>
-    </ol>
-  </aside>
-  <noscript><style>.panel[hidden]{display:grid!important}.panel{position:absolute;transform:none;inset:76px 16px 70px auto}.ribbon,.hints,#close-index{display:none}</style></noscript>
-</div>
-
-<script src="assets/vendor/gsap.min.js" defer></script>
+<div id="depth-ribbon"><img data-ribbon-poster src="assets/ribbon-poster.webp" srcset="assets/ribbon-poster-600.webp 600w, assets/ribbon-poster-900.webp 900w, assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" fetchpriority="high"></div>
 <script src="assets/js/ribbon.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </body>

@@ -1,5 +1,5 @@
 // node build.mjs → dist/ (minified JS, absolute URLs set to the production domain)
-import fs from 'fs'; import path from 'path'; import { transformSync } from 'esbuild';
+import fs from 'fs'; import path from 'path'; import { transformSync, buildSync } from 'esbuild';
 
 // Vercel sets VERCEL_PROJECT_PRODUCTION_URL (custom domain once one is added); SITE_URL overrides it
 const host = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || 'grafysta.cz';
@@ -15,4 +15,18 @@ for (const f of ['index.html', 'robots.txt', 'sitemap.xml', 'llms.txt']) {
   const p = path.join('dist', f);
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replaceAll('https://grafysta.cz', site));
 }
+// "O mně a proč zvolit mě": React + Lanyard (three) bundle
+buildSync({
+  entryPoints: ['app/o-mne/main.jsx'],
+  bundle: true,
+  minify: true,
+  jsx: 'automatic',
+  target: 'es2020',
+  format: 'iife',
+  define: { 'process.env.NODE_ENV': '"production"' },
+  outfile: 'dist/o-mne/app.js',
+  legalComments: 'none',
+  logLevel: 'warning'
+});
+
 console.log('dist ok →', site);

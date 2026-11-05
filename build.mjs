@@ -7,7 +7,7 @@ const site = 'https://' + host.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.cpSync('src', 'dist', { recursive: true });
-for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js']) {
+for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/shader-card.js', 'assets/js/main.js']) {
   const code = fs.readFileSync(path.join('src', f), 'utf8');
   fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
 }

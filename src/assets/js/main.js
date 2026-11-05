@@ -85,6 +85,13 @@
     return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw, bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i] };
   });
 
+  // headpage buttons: Shader Card
+  if (window.ShaderCard) {
+    document.querySelectorAll('[data-shader-card]').forEach(function (el) {
+      new ShaderCard(el, { borderRadius: '24px' });
+    });
+  }
+
   var stage = document.getElementById('depth-ribbon');
   var posterMode = /[?&]poster\b/.test(location.search);   // used once at build time to render the first frame
   function boot() {
@@ -112,7 +119,8 @@
       dpr: 2,
       workerUrl: 'assets/js/ribbon-core.js',
       coreUrl: 'assets/js/ribbon-core.js',
-      onReady: function () { document.documentElement.setAttribute('data-ribbon-ready', ''); }
+      onReady: function () { document.documentElement.setAttribute('data-ribbon-ready', ''); },
+      onFocusChange: function (item) { document.documentElement.classList.toggle('ribbon-focus', !!item); }
     });
   }
   // start WebGL after the page has loaded so it never competes with first paint

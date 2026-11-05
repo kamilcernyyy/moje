@@ -26,6 +26,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
+<link rel="preload" href="fonts/bebas-neue/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
   html, body { height: 100%; margin: 0; background: #0a0a0a; color: #fff; }
@@ -33,6 +34,42 @@
   [data-ribbon-poster] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; animation: rp-in 1s ease both; }
   @keyframes rp-in { from { filter: brightness(.12); } }
   #depth-ribbon { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background-color: #0a0a0a; outline: none; }
+
+  @font-face { font-family: "BebasNeue-Regular"; src: url(fonts/bebas-neue/BebasNeue-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+  /* headpage UI over the ribbon: logo top left, buttons top centre, text bottom right (mobile: logo top, buttons + text bottom) */
+  .hp { position: fixed; inset: 0; z-index: 2; pointer-events: none; display: grid;
+    grid-template: "logo btns ." auto ". . ." 1fr ". . txt" auto / minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start; column-gap: 24px;
+    padding: max(28px, env(safe-area-inset-top)) max(48px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(48px, env(safe-area-inset-left)); }
+  .hp-logo { grid-area: logo; margin: 0; font: 400 40px/1 "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; padding-top: 10px; }
+  .hp-btns { grid-area: btns; display: flex; gap: 12px; pointer-events: auto; }
+  .hp-txt { grid-area: txt; justify-self: end; margin: 0; max-width: 380px; text-align: right; font-size: 16px; line-height: 1.5; color: rgba(255,255,255,.74); text-wrap: pretty; }
+  .hp-low { display: contents; }
+  .hp-btns, .hp-txt { transition: opacity .42s ease, transform .52s cubic-bezier(.22,1,.36,1); }
+
+  /* Shader Card */
+  .shader-card { position: relative; overflow: hidden; isolation: isolate; border: 0.8px solid #1f1f1f; color: #fff; text-decoration: none;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); transform-style: preserve-3d; will-change: transform; }
+  .shader-card__flame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .shader-card__content { box-sizing: border-box; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+  .shader-card:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
+  .hp-btn { display: block; width: 236px; height: 64px; cursor: pointer; font: 600 15px/1.2 ui-sans-serif, system-ui, sans-serif; color: oklch(0.922 0 0); }
+  .hp-btn .shader-card__content { padding: 0 20px; text-align: center; }
+  button.hp-btn { padding: 0; appearance: none; }
+
+  @media (max-width: 760px) {
+    .hp { grid-template: "logo" auto "." 1fr "low" auto / minmax(0, 1fr);
+      padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+    .hp-logo { font-size: 34px; padding-top: 0; }
+    .hp-low { grid-area: low; display: grid; gap: 16px; }
+    .hp-btns, .hp-txt { grid-area: auto; }
+    .hp-btns { flex-direction: column; gap: 10px; }
+    .hp-btn { width: 100%; height: 60px; }
+    .hp-txt { justify-self: start; text-align: left; max-width: none; font-size: 15px; }
+    /* the ribbon caption sits at the bottom centre: make room while a card is close */
+    .ribbon-focus .hp-btns, .ribbon-focus .hp-txt { opacity: 0; transform: translateY(12px); pointer-events: none; }
+  }
 </style>
 
 <script type="application/ld+json">
@@ -66,6 +103,17 @@
 </head>
 <body>
 <div id="depth-ribbon"><img data-ribbon-poster src="assets/ribbon-poster.webp" srcset="assets/ribbon-poster-600.webp 600w, assets/ribbon-poster-900.webp 900w, assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" fetchpriority="high"></div>
+<div class="hp">
+  <p class="hp-logo">Grafysta</p>
+  <div class="hp-low">
+    <nav class="hp-btns" aria-label="Hlavní">
+      <a class="hp-btn" href="/o-mne/" data-shader-card><span class="shader-card__content">O mně a proč zvolit mě</span></a>
+      <button class="hp-btn" type="button" data-shader-card><span class="shader-card__content">Druhé tlačítko</span></button>
+    </nav>
+    <p class="hp-txt">Zástupný krátký text. Jedna až dvě věty o tom, co děláš a pro koho.</p>
+  </div>
+</div>
+<script src="assets/js/shader-card.js" defer></script>
 <script src="assets/js/ribbon.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </body>

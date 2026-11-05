@@ -1,5 +1,5 @@
 // node build.mjs → dist/ (minified JS, absolute URLs set to the production domain)
-import fs from 'fs'; import path from 'path'; import { transformSync, buildSync } from 'esbuild';
+import fs from 'fs'; import path from 'path'; import crypto from 'crypto'; import { transformSync, buildSync } from 'esbuild';
 
 // Vercel sets VERCEL_PROJECT_PRODUCTION_URL (custom domain once one is added); SITE_URL overrides it
 const host = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || 'grafysta.cz';
@@ -28,5 +28,16 @@ buildSync({
   legalComments: 'none',
   logLevel: 'warning'
 });
+
+// cache busting: every JS/CSS URL gets ?v=<content hash>, so a new deploy is never hidden by a cached file
+const hash = f => crypto.createHash('sha1').update(fs.readFileSync(path.join('dist', f))).digest('hex').slice(0, 10);
+const stamp = (file, refs) => {
+  let t = fs.readFileSync(path.join('dist', file), 'utf8');
+  for (const r of refs) t = t.split(r).join(r + '?v=' + hash(r.replace(/^\//, '')));
+  fs.writeFileSync(path.join('dist', file), t);
+};
+stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
+stamp('index.html', ['assets/js/shader-card.js', 'assets/js/ribbon.js', 'assets/js/main.js']);
+stamp('o-mne/index.html', ['/o-mne/app.js', '/o-mne/app.css']);
 
 console.log('dist ok →', site);

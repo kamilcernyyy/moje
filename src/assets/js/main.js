@@ -82,7 +82,10 @@
   ];
 
   var items = ART.map(function (a, i) {
-    return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw, bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i] };
+    return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw,
+      bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i],
+      // flame colour of the headpage panel while this work is closest to the camera
+      flame: ['#FF5DA2', '#FFD23F', '#FF6FB0', '#C04DFF', '#FF6A3D', '#FFD23F', '#FF8A1F', '#FF4B3A'][i] };
   });
 
   var stage = document.getElementById('depth-ribbon');
@@ -98,10 +101,10 @@
       hq: posterMode,
       interval: 9,
       speed: 0.6,
-      cardSize: 0.72,
+      cardSize: 0.86,
       aspect: 1,
       radius: 0.12,
-      offset: 1,
+      offset: 0.8,
       fov: 60,
       fog: 1,
       thread: 0.3,
@@ -112,10 +115,24 @@
       dpr: 2,
       workerUrl: 'assets/js/ribbon-core.js',
       coreUrl: 'assets/js/ribbon-core.js',
-      onReady: function () { document.documentElement.setAttribute('data-ribbon-ready', ''); },
+      onReady: function () {
+        document.documentElement.setAttribute('data-ribbon-ready', '');
+        window.dispatchEvent(new Event('ribbon-ready'));
+      },
+      onTravel: function (item) { if (item) window.dispatchEvent(new CustomEvent('ribbon-travel', { detail: { color: item.flame } })); },
       onFocusChange: function (item) { document.documentElement.classList.toggle('ribbon-focus', !!item); }
     });
+    if (!posterMode) frame();
   }
+  // lens shift so the nearest cards travel clear of the button panel
+  // desktop: picture moves left and up; mobile: up, above the floating panel
+  function frame() {
+    var r = window.__ribbon; if (!r || !r.setShift) return;
+    if (matchMedia('(max-width: 760px)').matches) r.setShift(0, 0.26);
+    else r.setShift(-0.24, 0.14);
+  }
+  addEventListener('resize', frame);
+
   // start WebGL after the page has loaded so it never competes with first paint
   var later = function () { if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 600 }); else setTimeout(boot, 100); };
   if (document.readyState === 'complete') later(); else addEventListener('load', later, { once: true });

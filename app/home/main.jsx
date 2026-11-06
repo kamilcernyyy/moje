@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import GlassSurface from '../glass/GlassSurface.jsx';
 
-// Layout 9 "Zásuvka", every glass size enlarged by 25 %:
-// desktop = glass drawer on the right, mobile = glass bottom sheet with a handle.
-const S = 1.25;
+// Headpage, layout 9 / panel variant 1:
+// a Shader Card flame panel (bottom right; on mobile a floating card) carrying two GlassSurface buttons.
 const GLASS = { distortionScale: -180, displace: 0.5, backgroundOpacity: 0.1 };
+const DESK = { w: 380, h: 80, pad: 28, gap: 15 };
+const MOB = { h: 64, pad: 16, gap: 10, inset: 12, handle: 26 };
 
 function useMobile() {
   const query = '(max-width: 760px)';
@@ -19,39 +20,58 @@ function useMobile() {
   return mobile;
 }
 
-function Buttons({ w, h }) {
-  return (
-    <div className="hp-btns">
-      <a className="hp-btn" href="/o-mne/">
-        <GlassSurface {...GLASS} width={w} height={h} borderRadius={h / 2}>
-          <span className="hp-label">O mně a proč zvolit mě</span>
-        </GlassSurface>
-      </a>
-      <button className="hp-btn" type="button">
-        <GlassSurface {...GLASS} width={w} height={h} borderRadius={h / 2}>
-          <span className="hp-label">CHCI!</span>
-        </GlassSurface>
-      </button>
-    </div>
+function Btn({ w, h, label, href }) {
+  const glass = (
+    <GlassSurface {...GLASS} width={w} height={h} borderRadius={h / 2}>
+      <span className="hp-label">{label}</span>
+    </GlassSurface>
   );
+  return href ? <a className="hp-btn" href={href}>{glass}</a> : <button className="hp-btn" type="button">{glass}</button>;
 }
 
 function Home() {
   const mobile = useMobile();
+  const flameRef = useRef(null);
   const [collapsed, setCollapsed] = useState(false);
   const drag = useRef(null);
 
+  // flame panel: recolours with the work closest to the camera, rises again on the intro.
+  // Created in its own idle slot so the WebGL setup never lands in the same task as the first render.
+  useEffect(() => {
+    if (!window.ShaderCard) return undefined;
+    let card = null;
+    const start = () => {
+      if (!flameRef.current) return;
+      card = new window.ShaderCard(flameRef.current, { borderRadius: '24px', interactive: false });
+      if (window.__flame) card.setColor(window.__flame, 0.01);
+    };
+    const id = 'requestIdleCallback' in window ? requestIdleCallback(start, { timeout: 600 }) : setTimeout(start, 50);
+    const onTravel = e => { window.__flame = e.detail.color; if (card) card.setColor(e.detail.color, 0.8); };
+    const onIntro = () => card && card.replay && card.replay();
+    window.addEventListener('ribbon-travel', onTravel);
+    window.addEventListener('hp-intro', onIntro);
+    return () => {
+      if ('cancelIdleCallback' in window) cancelIdleCallback(id); else clearTimeout(id);
+      window.removeEventListener('ribbon-travel', onTravel);
+      window.removeEventListener('hp-intro', onIntro);
+      if (card) card.destroy();
+    };
+  }, [mobile]);
+
   if (!mobile) {
-    // drawer: 376 × full height in the chosen mockup, buttons 304 × 64 → ×1.25
+    const { w, h, pad, gap } = DESK;
     return (
-      <div className="hp-drawer">
-        <GlassSurface {...GLASS} width={Math.round(376 * S)} height="calc(100dvh - 48px)" borderRadius={Math.round(28 * S)} />
-        <Buttons w={Math.round(304 * S)} h={Math.round(64 * S)} />
+      <div className="hp-panel" style={{ width: w + pad * 2, height: h * 2 + gap + pad * 2 }}>
+        <div className="hp-flame" ref={flameRef} key="d" />
+        <div className="hp-btns" style={{ padding: pad, gap }}>
+          <Btn w={w} h={h} label="O mně a proč zvolit mě" href="/o-mne/" />
+          <Btn w={w} h={h} label="CHCI!" />
+        </div>
       </div>
     );
   }
 
-  // bottom sheet: buttons 350 × 58 in the mockup → height ×1.25, full width minus gutters
+  const { h, pad, gap, inset, handle } = MOB;
   const onDown = e => { drag.current = e.clientY; e.currentTarget.setPointerCapture?.(e.pointerId); };
   const onUp = e => {
     if (drag.current === null) return;
@@ -61,15 +81,22 @@ function Home() {
     else setCollapsed(dy > 0);
   };
   return (
-    <div className={`hp-sheet${collapsed ? ' is-collapsed' : ''}`}>
-      <GlassSurface {...GLASS} width="100%" height="100%" borderRadius={Math.round(28 * S)} />
+    <div className={`hp-sheet${collapsed ? ' is-collapsed' : ''}`}
+      style={{ left: inset, right: inset, bottom: `calc(${inset}px + env(safe-area-inset-bottom))`, height: handle + h * 2 + gap + pad }}>
+      <div className="hp-flame" ref={flameRef} key="m" />
       <button className="hp-handle" type="button" aria-label={collapsed ? 'Vysunout tlačítka' : 'Schovat tlačítka'}
         aria-expanded={!collapsed} onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => (drag.current = null)}>
         <span />
       </button>
-      <Buttons w="100%" h={Math.round(58 * S)} />
+      <div className="hp-btns" style={{ padding: `${handle}px ${pad}px 0`, gap }}>
+        <Btn w="100%" h={h} label="O mně a proč zvolit mě" href="/o-mne/" />
+        <Btn w="100%" h={h} label="CHCI!" />
+      </div>
     </div>
   );
 }
 
-createRoot(document.getElementById('hp-root')).render(<Home />);
+// mount after the page has loaded and gone idle, so the glass and flame never block first paint
+const mount = () => createRoot(document.getElementById('hp-root')).render(<Home />);
+const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(mount, { timeout: 800 }) : setTimeout(mount, 60));
+if (document.readyState === 'complete') idle(); else addEventListener('load', idle, { once: true });

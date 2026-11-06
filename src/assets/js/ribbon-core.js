@@ -327,6 +327,9 @@
     var hfov = 2 * Math.atan(Math.tan(this.fovR / 2) * this.aspectR);
     this.overDist = (this.path.r + this.cardH) / Math.sin(Math.min(this.fovR, hfov) / 2) * 1.0;
     this.proj = perspective(this.fovR, this.aspectR, 0.05, 400);
+    // lens shift: moves the whole picture on screen (NDC units) without touching the 3D scene
+    var sh = this.shift || [0, 0];
+    this.proj[8] = -sh[0]; this.proj[9] = -sh[1];
   };
 
   /* ---------- input (canvas-local CSS pixels) ---------- */
@@ -382,7 +385,8 @@
 
   P._pick = function (x, y) {
     if (!this.cam) return -1;
-    var nx = (x / this.w) * 2 - 1, ny = 1 - (y / this.h) * 2, cam = this.cam;
+    var sh = this.shift || [0, 0];
+    var nx = (x / this.w) * 2 - 1 - sh[0], ny = 1 - (y / this.h) * 2 - sh[1], cam = this.cam;
     var f = norm(sub(cam.target, cam.pos)), right = norm(cross(f, cam.up)), up = cross(right, f), th = Math.tan(this.fovR / 2);
     var dir = norm(add(f, add(mul(right, nx * th * this.aspectR), mul(up, ny * th))));
     var best = -1, bt = Infinity, hw = this.cardW / 2, hh = this.cardH / 2, maxD = this._fog ? this._fog[1] * 0.85 : 1e9;
@@ -478,6 +482,7 @@
   };
   P.reveal = function () { this._reveal(true); };
   P.setVisible = function (v) { this.s.visible = !!v; };
+  P.setShift = function (x, y) { this.shift = [x, y]; if (this.proj) { this.proj[8] = -x; this.proj[9] = -y; } };
   P.destroy = function () { this._dead = true; clearTimeout(this._tourTimer); clearTimeout(this._holdTimer); };
 
   // message router used by the worker bootstrap and the main-thread fallback
@@ -491,6 +496,7 @@
       case 'travel': this.travel(m.n); break;
       case 'reveal': this.reveal(); break;
       case 'visible': this.setVisible(m.v); break;
+      case 'shift': this.setShift(m.x, m.y); break;
       case 'destroy': this.destroy(); break;
     }
   };

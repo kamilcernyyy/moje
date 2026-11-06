@@ -7,7 +7,7 @@ const site = 'https://' + host.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.cpSync('src', 'dist', { recursive: true });
-for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js']) {
+for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js', 'assets/js/shader-card.js', 'assets/js/intro.js']) {
   const code = fs.readFileSync(path.join('src', f), 'utf8');
   fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
 }
@@ -51,7 +51,7 @@ const stamp = (file, refs) => {
   fs.writeFileSync(path.join('dist', file), t);
 };
 stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
-stamp('index.html', ['assets/js/ribbon.js', 'assets/js/main.js', 'assets/js/home.js', 'assets/js/home.css']);
+stamp('index.html', ['assets/vendor/gsap.min.js', 'assets/js/ribbon.js', 'assets/js/main.js', 'assets/js/shader-card.js', 'assets/js/home.js', 'assets/js/intro.js', 'assets/js/home.css']);
 stamp('o-mne/index.html', ['/o-mne/app.js', '/o-mne/app.css']);
 
 console.log('dist ok →', site);

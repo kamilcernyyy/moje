@@ -26,7 +26,14 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
-<link rel="stylesheet" href="assets/js/home.css">
+<script>
+  (function (d) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    d.classList.add('intro');
+    setTimeout(function () { d.classList.remove('intro'); }, 7000);
+  })(document.documentElement);
+</script>
+<link rel="stylesheet" href="assets/js/home.css" media="print" onload="this.media='all'">
 <link rel="preload" href="fonts/bebas-neue/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
@@ -44,21 +51,35 @@
     top: max(28px, env(safe-area-inset-top)); left: max(48px, env(safe-area-inset-left));
     font: 400 40px/1 "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
   #hp-root { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
-  .hp-drawer { position: absolute; top: 24px; bottom: 24px; right: max(24px, env(safe-area-inset-right)); width: 470px; pointer-events: auto; }
-  .hp-drawer .hp-btns { position: absolute; left: 45px; right: 45px; bottom: 45px; display: grid; gap: 15px; }
-  .hp-btns { display: grid; gap: 15px; }
+  .hp-btns { position: relative; z-index: 1; display: grid; }
   .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
   .hp-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
   .hp-label { font: 400 28px/1 "BebasNeue-Regular", "Bebas Neue", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
 
-  .hp-sheet { position: absolute; left: 0; right: 0; bottom: 0; height: calc(222px + env(safe-area-inset-bottom)); pointer-events: auto;
-    transition: transform .45s cubic-bezier(.22,1,.36,1); }
-  .hp-sheet > .glass-surface { position: absolute; inset: 0; }
-  .hp-sheet .hp-btns { position: absolute; left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); top: 40px; gap: 12px; }
-  .hp-sheet .hp-label { font-size: 26px; }
-  .hp-handle { position: absolute; left: 50%; top: 0; width: 96px; height: 36px; margin-left: -48px; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; z-index: 2; }
-  .hp-handle span { display: block; width: 48px; height: 5px; margin: 14px auto 0; border-radius: 3px; background: rgba(255,255,255,.55); }
-  .hp-sheet.is-collapsed, .ribbon-focus .hp-sheet { transform: translateY(calc(100% - 36px)); }
+  /* flame panel (Shader Card) behind the glass buttons */
+  .hp-panel { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); pointer-events: auto; }
+  .hp-flame, .hp-flame.shader-card { position: absolute; inset: 0; }
+  .shader-card { overflow: hidden; isolation: isolate; border: 0.8px solid #1f1f1f; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+  .shader-card__flame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+  /* mobile: floating flame card with a grip */
+  .hp-sheet { position: absolute; pointer-events: auto; transition: transform .45s cubic-bezier(.22,1,.36,1); }
+  .hp-sheet .hp-btns { position: absolute; inset: 0; align-content: start; }
+  .hp-sheet .hp-label { font-size: 24px; }
+  .hp-handle { position: absolute; left: 50%; top: 0; width: 96px; height: 26px; margin-left: -48px; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; z-index: 2; }
+  .hp-handle span { display: block; width: 44px; height: 5px; margin: 10px auto 0; border-radius: 3px; background: rgba(255,255,255,.55); }
+  .hp-sheet.is-collapsed, .ribbon-focus .hp-sheet { transform: translateY(calc(100% - 26px + 12px + env(safe-area-inset-bottom))); }
+
+  /* intro start state (removed by intro.js; failsafe in <head>) */
+  .intro .hp-logo { visibility: hidden; }
+  .intro .hp-panel, .intro .hp-sheet { opacity: 0; }
+  .hp-logo-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .04em; }
+  .hp-logo .ch { display: inline-block; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* poster (first frame) follows the same lens shift as the live ribbon */
+  [data-ribbon-poster] { transform: translate(-12vw, -7vh); }
+  @media (max-width: 760px) { [data-ribbon-poster] { transform: translate(0, -13vh); } }
 
   @media (max-width: 760px) {
     .hp-logo { top: max(24px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); font-size: 34px; }
@@ -101,6 +122,9 @@
 <div id="hp-root"></div>
 <script src="assets/js/ribbon.js" defer></script>
 <script src="assets/js/main.js" defer></script>
+<script src="assets/vendor/gsap.min.js" defer></script>
+<script src="assets/js/shader-card.js" defer></script>
 <script src="assets/js/home.js" defer></script>
+<script src="assets/js/intro.js" defer></script>
 </body>
 </html>

@@ -6,14 +6,41 @@
 <title>O mně a proč zvolit mě · Grafysta</title>
 <meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/bebas-neue/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/o-mne/app.css">
+<script>
+  /* loader with the question: once per visit (session), skipped with reduced motion; failsafe shows the badge anyway */
+  (function (d) {
+    try {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || sessionStorage.getItem('qseen')) return;
+      sessionStorage.setItem('qseen', '1');
+    } catch (e) {}
+    d.documentElement.classList.add('qload');
+    setTimeout(function () {
+      d.documentElement.classList.remove('qload');
+      if (!window.__qDone) { window.__qDone = 1; dispatchEvent(new Event('q-done')); }
+    }, 7000);
+  })(document);
+</script>
 <style>
+  @font-face { font-family: "BebasNeue-Regular"; src: url(/fonts/bebas-neue/BebasNeue-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
   html, body { height: 100%; margin: 0; background: #0a0a0a; overflow: hidden; }
   #root { width: 100%; height: 100dvh; }
+  .q-loader { display: none; }
+  .qload .q-loader { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 0 16px; pointer-events: none; }
+  .q-loader p { margin: 0; visibility: hidden; text-align: center; color: #fff; text-transform: uppercase; letter-spacing: .01em;
+    font: 400 clamp(48px, 14vw, 190px)/.9 "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; }
+  .q-line { display: block; overflow: hidden; padding-block: .04em; }
+  .q-w { display: inline-block; }
 </style>
 </head>
 <body>
+<div class="q-loader" aria-hidden="true">
+  <p><span class="q-line"><span class="q-w">Kdo</span> <span class="q-w">jsem</span></span><span class="q-line"><span class="q-w">a</span> <span class="q-w">proč</span> <span class="q-w">se</span> <span class="q-w">mnou?</span></span></p>
+</div>
 <div id="root"></div>
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/o-mne/loader.js" defer></script>
 <script src="/o-mne/app.js" defer></script>
 </body>
 </html>

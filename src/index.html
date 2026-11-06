@@ -61,6 +61,9 @@
   .hp-flame, .hp-flame.shader-card { position: absolute; inset: 0; }
   .shader-card { overflow: hidden; isolation: isolate; border: 0.8px solid #1f1f1f; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
   .shader-card__flame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  /* glass panel under the flame: the flame is see-through, so the refracted ribbon shows above it */
+  .hp-panel-glass { position: absolute !important; inset: 0; }
+  .shader-card--clear { border: 0; box-shadow: none; pointer-events: none; }
 
   /* mobile: floating flame card with a grip */
   .hp-sheet { position: absolute; pointer-events: auto; transition: transform .45s cubic-bezier(.22,1,.36,1); }

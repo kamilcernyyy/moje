@@ -83,9 +83,7 @@
 
   var items = ART.map(function (a, i) {
     return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw,
-      bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i],
-      // flame colour of the headpage panel while this work is closest to the camera
-      flame: ['#FF5DA2', '#FFD23F', '#FF6FB0', '#C04DFF', '#FF6A3D', '#FFD23F', '#FF8A1F', '#FF4B3A'][i] };
+      bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i] };
   });
 
   var stage = document.getElementById('depth-ribbon');
@@ -119,7 +117,6 @@
         document.documentElement.setAttribute('data-ribbon-ready', '');
         window.dispatchEvent(new Event('ribbon-ready'));
       },
-      onTravel: function (item) { if (item) window.dispatchEvent(new CustomEvent('ribbon-travel', { detail: { color: item.flame } })); },
       onFocusChange: function (item) { document.documentElement.classList.toggle('ribbon-focus', !!item); }
     });
     if (!posterMode) frame();

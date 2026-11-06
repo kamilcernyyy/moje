@@ -35,24 +35,20 @@ function Home() {
   const [collapsed, setCollapsed] = useState(false);
   const drag = useRef(null);
 
-  // flame panel: recolours with the work closest to the camera, rises again on the intro.
+  // flame panel: rises again on the intro.
   // Created in its own idle slot so the WebGL setup never lands in the same task as the first render.
   useEffect(() => {
     if (!window.ShaderCard) return undefined;
     let card = null;
     const start = () => {
       if (!flameRef.current) return;
-      card = new window.ShaderCard(flameRef.current, { borderRadius: '24px', interactive: false });
-      if (window.__flame) card.setColor(window.__flame, 0.01);
+      card = new window.ShaderCard(flameRef.current, { borderRadius: '24px', interactive: false, transparent: true });
     };
     const id = 'requestIdleCallback' in window ? requestIdleCallback(start, { timeout: 600 }) : setTimeout(start, 50);
-    const onTravel = e => { window.__flame = e.detail.color; if (card) card.setColor(e.detail.color, 0.8); };
     const onIntro = () => card && card.replay && card.replay();
-    window.addEventListener('ribbon-travel', onTravel);
     window.addEventListener('hp-intro', onIntro);
     return () => {
       if ('cancelIdleCallback' in window) cancelIdleCallback(id); else clearTimeout(id);
-      window.removeEventListener('ribbon-travel', onTravel);
       window.removeEventListener('hp-intro', onIntro);
       if (card) card.destroy();
     };
@@ -62,6 +58,7 @@ function Home() {
     const { w, h, pad, gap } = DESK;
     return (
       <div className="hp-panel" style={{ width: w + pad * 2, height: h * 2 + gap + pad * 2 }}>
+        <GlassSurface {...GLASS} className="hp-panel-glass" width={w + pad * 2} height={h * 2 + gap + pad * 2} borderRadius={24} />
         <div className="hp-flame" ref={flameRef} key="d" />
         <div className="hp-btns" style={{ padding: pad, gap }}>
           <Btn w={w} h={h} label="O mně a proč zvolit mě" href="/o-mne/" />
@@ -83,6 +80,7 @@ function Home() {
   return (
     <div className={`hp-sheet${collapsed ? ' is-collapsed' : ''}`}
       style={{ left: inset, right: inset, bottom: `calc(${inset}px + env(safe-area-inset-bottom))`, height: handle + h * 2 + gap + pad }}>
+      <GlassSurface {...GLASS} className="hp-panel-glass" width="100%" height="100%" borderRadius={24} />
       <div className="hp-flame" ref={flameRef} key="m" />
       <button className="hp-handle" type="button" aria-label={collapsed ? 'Vysunout tlačítka' : 'Schovat tlačítka'}
         aria-expanded={!collapsed} onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => (drag.current = null)}>

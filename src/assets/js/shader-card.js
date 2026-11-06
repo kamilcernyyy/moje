@@ -13,6 +13,7 @@
     color: '#5227FF',
     highlightColor: null,      // defaults to a lighter, warmer shade of color
     backgroundColor: '#111111',
+    transparent: false,        // true: no card fill, the dark part of the flame becomes see-through
     speed: 0.5,
     positionY: 0,
     scale: 4,
@@ -52,7 +53,7 @@
     'uniform vec2 uRes; uniform float uTime; uniform float uIntro; uniform float uHover;',
     'uniform vec3 uColor; uniform vec3 uHi; uniform vec3 uBg;',
     'uniform float uPosY, uScale, uRadius, uBoost, uEdgeMin, uEdgeMax, uFalloff, uNoise, uWidth, uWave, uBranch;',
-    'uniform float uVExt, uHExt, uContours, uFlash, uIntensity, uBloom, uGrain, uFade, uOpacity;',
+    'uniform float uVExt, uHExt, uContours, uFlash, uIntensity, uBloom, uGrain, uFade, uOpacity, uClear;',
     'float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }',
     'float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
     '  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y); }',
@@ -95,7 +96,12 @@
     '  col = mix(col, uBg, clamp(top * 0.85, 0.0, 1.0));',
     '  col = mix(uBg, col, uOpacity);',
     '  col += (hash(frag + fract(t * 7.0) * 100.0) - 0.5) * uGrain * 0.09;',
-    '  gl_FragColor = vec4(col, 1.0);',
+    '  if (uClear > 0.5) {',
+    // transparent mode: light acts as coverage, so the dark part disappears (premultiplied output)
+    '    col = max(col, 0.0);',
+    '    float a = clamp(max(col.r, max(col.g, col.b)) * 1.15, 0.0, 1.0);',
+    '    gl_FragColor = vec4(min(col, vec3(a)), a);',
+    '  } else gl_FragColor = vec4(col, 1.0);',
     '}'
   ].join('\n');
 
@@ -123,13 +129,13 @@
 
   /* ---------- GL renderer (runs in the worker, or on the main thread as a fallback) ---------- */
   var UNIFORMS = ['uRes', 'uTime', 'uIntro', 'uHover', 'uColor', 'uHi', 'uBg', 'uPosY', 'uScale', 'uRadius', 'uBoost', 'uEdgeMin', 'uEdgeMax', 'uFalloff',
-    'uNoise', 'uWidth', 'uWave', 'uBranch', 'uVExt', 'uHExt', 'uContours', 'uFlash', 'uIntensity', 'uBloom', 'uGrain', 'uFade', 'uOpacity'];
+    'uNoise', 'uWidth', 'uWave', 'uBranch', 'uVExt', 'uHExt', 'uContours', 'uFlash', 'uIntensity', 'uBloom', 'uGrain', 'uFade', 'uOpacity', 'uClear'];
   var MAP = { uPosY: 'positionY', uScale: 'scale', uRadius: 'effectRadius', uBoost: 'effectBoost', uEdgeMin: 'edgeMin', uEdgeMax: 'edgeMax',
     uFalloff: 'falloffPower', uNoise: 'noiseScale', uWidth: 'widthFactor', uWave: 'waveAmount', uBranch: 'branchIntensity', uVExt: 'verticalExtent',
     uHExt: 'horizontalExtent', uContours: 'contours', uFlash: 'flash', uIntensity: 'intensity', uBloom: 'bloom', uGrain: 'grain', uFade: 'fade', uOpacity: 'opacity' };
 
   function GLR(canvas, o) {
-    var gl = this.gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'low-power' });
+    var gl = this.gl = canvas.getContext('webgl', { antialias: false, alpha: !!o.transparent, premultipliedAlpha: !!o.transparent, powerPreference: 'low-power' });
     if (!gl) throw new Error('no webgl');
     this.canvas = canvas;
     function sh(type, src) { var x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); return x; }
@@ -144,7 +150,8 @@
     var c = rgb(o.color);
     gl.uniform3fv(u.uColor, c);
     gl.uniform3fv(u.uHi, o.highlightColor ? rgb(o.highlightColor) : highlight(c));
-    gl.uniform3fv(u.uBg, rgb(o.backgroundColor));
+    gl.uniform3fv(u.uBg, o.transparent ? [0, 0, 0] : rgb(o.backgroundColor));
+    gl.uniform1f(u.uClear, o.transparent ? 1 : 0);
     for (var k in MAP) gl.uniform1f(u[k], o[MAP[k]]);
   }
   GLR.prototype.resize = function (w, h) {
@@ -192,7 +199,8 @@
 
     el.classList.add('shader-card');
     el.style.borderRadius = o.borderRadius;
-    el.style.backgroundColor = o.backgroundColor;
+    el.style.backgroundColor = o.transparent ? 'transparent' : o.backgroundColor;
+    if (o.transparent) el.classList.add('shader-card--clear');
 
     // flame layer under the content
     var layer = this.layer = document.createElement('div');

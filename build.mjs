@@ -7,7 +7,7 @@ const site = 'https://' + host.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.cpSync('src', 'dist', { recursive: true });
-for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/shader-card.js', 'assets/js/main.js']) {
+for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js']) {
   const code = fs.readFileSync(path.join('src', f), 'utf8');
   fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
 }
@@ -15,6 +15,20 @@ for (const f of ['index.html', 'robots.txt', 'sitemap.xml', 'llms.txt']) {
   const p = path.join('dist', f);
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replaceAll('https://grafysta.cz', site));
 }
+// headpage: glass drawer / sheet (React + GlassSurface)
+buildSync({
+  entryPoints: ['app/home/main.jsx'],
+  bundle: true,
+  minify: true,
+  jsx: 'automatic',
+  target: 'es2020',
+  format: 'iife',
+  define: { 'process.env.NODE_ENV': '"production"' },
+  outfile: 'dist/assets/js/home.js',
+  legalComments: 'none',
+  logLevel: 'warning'
+});
+
 // "O mně a proč zvolit mě": React + Lanyard (three) bundle
 buildSync({
   entryPoints: ['app/o-mne/main.jsx'],
@@ -37,7 +51,7 @@ const stamp = (file, refs) => {
   fs.writeFileSync(path.join('dist', file), t);
 };
 stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
-stamp('index.html', ['assets/js/shader-card.js', 'assets/js/ribbon.js', 'assets/js/main.js']);
+stamp('index.html', ['assets/js/ribbon.js', 'assets/js/main.js', 'assets/js/home.js', 'assets/js/home.css']);
 stamp('o-mne/index.html', ['/o-mne/app.js', '/o-mne/app.css']);
 
 console.log('dist ok →', site);

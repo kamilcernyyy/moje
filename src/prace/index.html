@@ -29,7 +29,7 @@
 <script>
   (function (d) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    d.classList.add('intro');
+    d.classList.add('intro', 'crane');
     setTimeout(function () { d.classList.remove('intro'); }, 4000);
   })(document.documentElement);
 </script>
@@ -53,6 +53,13 @@
     font: 400 40px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
   /* second part of the page: the ribbon gallery with its flame panel */
   .pr-gallery { position: relative; height: 100svh; }
+  /* crane down (GSAP ScrollTrigger): hero and gallery share one pinned stage; the camera tilts from the tunnel down to the ribbon */
+  html.crane { scroll-behavior: auto; }
+  .crane .pr-track { height: 200svh; }
+  .crane .pr-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; perspective: 90vw; }
+  .crane #pr-hero, .crane .pr-gallery { position: absolute; inset: 0; }
+  .crane #pr-hero { z-index: 2; }
+  .crane .pr-gallery { z-index: 1; transform: translateY(100%); } /* waits below the shot, where the crane picks it up */
   #hp-root { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   .hp-btns { position: relative; z-index: 1; display: grid; }
   .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
@@ -166,15 +173,19 @@
 </head>
 <body>
 <p class="hp-logo">Grafysta</p>
-<main>
+<main class="pr-track">
+<div class="pr-stage">
 <div id="pr-hero"><!--SSR--></div>
 <section class="pr-gallery" id="galerie" aria-label="Galerie prací">
 <div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" loading="lazy"></div>
 <div id="hp-root"></div>
 </section>
+</div>
 </main>
 <script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/assets/js/intro.js" defer></script>
+<script src="/assets/js/crane.js" defer></script>
 <script src="/assets/js/ribbon.js" defer></script>
 <script src="/assets/js/main.js" defer></script>
 <script src="/assets/js/shader-card.js" defer></script>

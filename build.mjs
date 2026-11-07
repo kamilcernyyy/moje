@@ -31,26 +31,32 @@ const react = (entry, outfile) => buildSync({
 react('app/home/main.jsx', 'dist/assets/js/home.js');
 // gallery of works (/prace/): flame panel with glass buttons over the Depth Ribbon
 react('app/prace/main.jsx', 'dist/assets/js/prace.js');
+// hero-03 tunnel scene: runs in a worker (or on the page as a fallback)
+react('app/prace/tunnel-core.js', 'dist/assets/js/tunnel-core.js');
 
-// headpage markup is pre-rendered (first paint and crawlers get the real headline), its layout CSS is inlined
-buildSync({
-  entryPoints: ['app/home/ssr.jsx'],
-  bundle: true,
-  jsx: 'automatic',
-  platform: 'node',
-  packages: 'external',
-  format: 'esm',
-  loader: { '.css': 'empty' },
-  define: { 'process.env.NODE_ENV': '"production"' },
-  outfile: 'ssr-home.tmp.mjs',
-  logLevel: 'warning'
-});
-{
-  const { default: render } = await import(pathToFileURL(path.resolve('ssr-home.tmp.mjs')).href + '?t=' + Date.now());
-  const css = fs.readFileSync('app/home/TileReveal.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s*\n\s*/g, ' ').trim();
-  const p = path.join('dist', 'index.html');
-  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('<!--SSR-->', render()).replace('/*TILE_REVEAL_CSS*/', css));
-  fs.rmSync('ssr-home.tmp.mjs', { force: true });
+// above-the-fold markup is pre-rendered (first paint and crawlers get the real headline); layout CSS inlined where needed
+for (const { entry, page, css } of [
+  { entry: 'app/home/ssr.jsx', page: 'index.html', css: 'app/home/TileReveal.css' },
+  { entry: 'app/prace/ssr.jsx', page: 'prace/index.html' }
+]) {
+  buildSync({
+    entryPoints: [entry],
+    bundle: true,
+    jsx: 'automatic',
+    platform: 'node',
+    packages: 'external',
+    format: 'esm',
+    loader: { '.css': 'empty' },
+    define: { 'process.env.NODE_ENV': '"production"' },
+    outfile: 'ssr.tmp.mjs',
+    logLevel: 'warning'
+  });
+  const { default: render } = await import(pathToFileURL(path.resolve('ssr.tmp.mjs')).href + '?t=' + Date.now() + entry);
+  const p = path.join('dist', page);
+  let html = fs.readFileSync(p, 'utf8').replace('<!--SSR-->', render());
+  if (css) html = html.replace('/*TILE_REVEAL_CSS*/', fs.readFileSync(css, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s*\n\s*/g, ' ').trim());
+  fs.writeFileSync(p, html);
+  fs.rmSync('ssr.tmp.mjs', { force: true });
 }
 
 // "O mně a proč zvolit mě": React + Lanyard (three) bundle
@@ -76,7 +82,8 @@ const stamp = (file, refs) => {
 };
 stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
 stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css']);
-stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/intro.js', '/assets/js/prace.css']);
+stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
+stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/js/intro.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
 
 console.log('dist ok →', site);

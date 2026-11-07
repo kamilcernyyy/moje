@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import GlassSurface from '../glass/GlassSurface.jsx';
+import Hero from './Hero.jsx';
 
 // Headpage, layout 9 / panel variant 1:
 // a Shader Card flame panel (bottom right; on mobile a floating card) carrying two GlassSurface buttons.
@@ -94,7 +95,10 @@ function Home() {
   );
 }
 
-// mount after the page has loaded and gone idle, so the glass and flame never block first paint
+// hero-03 on top: markup pre-rendered at build time, React takes over here
+hydrateRoot(document.getElementById('pr-hero'), <Hero />);
+
+// panel: mount after the page has loaded and gone idle, so the glass and flame never block first paint
 const mount = () => createRoot(document.getElementById('hp-root')).render(<Home />);
 const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(mount, { timeout: 800 }) : setTimeout(mount, 60));
 if (document.readyState === 'complete') idle(); else addEventListener('load', idle, { once: true });

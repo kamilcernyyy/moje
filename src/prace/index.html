@@ -30,31 +30,34 @@
   (function (d) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     d.classList.add('intro');
-    setTimeout(function () { d.classList.remove('intro'); }, 7000);
+    setTimeout(function () { d.classList.remove('intro'); }, 4000);
   })(document.documentElement);
 </script>
 <link rel="stylesheet" href="/assets/js/prace.css" media="print" onload="this.media='all'">
-<link rel="preload" href="/fonts/bebas-neue/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
-  html, body { height: 100%; margin: 0; background: #0a0a0a; color: #fff; }
-  body { font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; overflow: hidden; }
+  html, body { margin: 0; background: #0a0a0a; color: #fff; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   [data-ribbon-poster] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; animation: rp-in 1s ease both; }
   @keyframes rp-in { from { filter: brightness(.12); } }
   #depth-ribbon { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background-color: #0a0a0a; outline: none; }
 
-  @font-face { font-family: "BebasNeue-Regular"; src: url(/fonts/bebas-neue/BebasNeue-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
-  body { font-family: "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; }
+  @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  body { font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; }
 
   /* layout 9 "Zásuvka": logo top left, glass drawer on the right (mobile: glass bottom sheet) */
   .hp-logo { position: fixed; z-index: 3; margin: 0; pointer-events: none;
     top: max(28px, env(safe-area-inset-top)); left: max(48px, env(safe-area-inset-left));
-    font: 400 40px/1 "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
-  #hp-root { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+    font: 400 40px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
+  /* second part of the page: the ribbon gallery with its flame panel */
+  .pr-gallery { position: relative; height: 100svh; }
+  #hp-root { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   .hp-btns { position: relative; z-index: 1; display: grid; }
   .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
   .hp-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
-  .hp-label { font: 400 28px/1 "BebasNeue-Regular", "Bebas Neue", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
+  .hp-label { font: 400 28px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
 
   /* flame panel (Shader Card) behind the glass buttons */
   .hp-panel { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); pointer-events: auto; }
@@ -79,6 +82,59 @@
   .hp-logo-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .04em; }
   .hp-logo .ch { display: inline-block; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+
+  /* hero 03 (Originkit) on top — the original's Tailwind utilities written out, Grafysta colours and type */
+  .pr-hero { position: relative; isolation: isolate; width: 100%; overflow: hidden; background: #0a0a0a; }
+  .pr-hero-inner { position: relative; margin: 0 auto; display: flex; flex-direction: column; width: 100%; max-width: 1600px; height: 100svh; }
+  @media (min-width: 1920px) { .pr-hero-inner { max-width: none; } }
+  .pr-bg { position: absolute; inset: 0; overflow: hidden; }
+  .pr-veil { pointer-events: none; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(10,10,10,.55) 0%, rgba(10,10,10,.22) 40%, transparent 64%); }
+  .pr-center { pointer-events: none; position: relative; z-index: 20; display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px 48px; }
+  .pr-content { pointer-events: none; position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 34px; width: 100%; max-width: 378px; }
+  .pr-content-veil { pointer-events: none; position: absolute; top: 50%; left: 50%; width: 360px; height: 300px; transform: translate(-50%, -50%); background: #0a0a0a; filter: blur(36px); }
+  .pr-content-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 34px; width: 100%; }
+  .pr-text { display: flex; flex-direction: column; align-items: center; gap: 17px; width: 100%; }
+  .pr-title { margin: 0; width: 100%; text-align: center; font-weight: 400; font-size: 72px; line-height: .92; letter-spacing: .01em; text-transform: uppercase; color: #fff; }
+  .pr-lead { margin: 0; width: 100%; max-width: 340px; text-align: center; font-size: 22px; line-height: 1.15; letter-spacing: .04em; text-transform: uppercase; color: rgba(255,255,255,.62); text-wrap: pretty; }
+  .pr-btns { pointer-events: auto; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 12px; }
+  .pr-btn { display: block; width: 136px; height: 56px; border-radius: 999px; color: #fff; text-decoration: none; }
+  .pr-btn--wide { width: 206px; }
+  .pr-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
+  .pr-btn-label { font-size: 21px; line-height: 1; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; white-space: nowrap; }
+  @media (min-width: 768px) {
+    .pr-veil { background: radial-gradient(ellipse at center, rgba(10,10,10,.62) 0%, rgba(10,10,10,.3) 38%, transparent 62%); }
+    .pr-center { padding-left: 48px; padding-right: 48px; }
+    .pr-content { max-width: 490px; gap: 44px; }
+    .pr-content-veil { width: 591px; height: 497px; filter: blur(56px); }
+    .pr-content-inner { gap: 44px; }
+    .pr-text { gap: 22px; }
+    .pr-title { font-size: 104px; }
+    .pr-lead { max-width: 440px; font-size: 26px; }
+    .pr-btns { gap: 16px; }
+    .pr-btn { width: 180px; height: 64px; }
+    .pr-btn--wide { width: 270px; }
+    .pr-btn-label { font-size: 26px; }
+  }
+  @media (min-width: 1280px) {
+    .pr-veil { background: radial-gradient(ellipse at center, rgba(10,10,10,.72) 0%, rgba(10,10,10,.38) 36%, transparent 60%); }
+    .pr-center { padding: 24px 24px 80px; }
+    .pr-content { max-width: 502px; gap: 32px; }
+    .pr-content-veil { width: 433px; height: 364px; filter: blur(41px); }
+    .pr-content-inner { gap: 32px; }
+    .pr-text { gap: 16px; }
+    .pr-title { font-size: 120px; }
+  }
+  /* hero copy reveal (hero-03: fade up out of a blur, 0.45 s ease-out-cubic) in CSS, so the headline paints without waiting for scripts */
+  [data-reveal] { animation: pr-reveal .45s cubic-bezier(.215,.61,.355,1) both; }
+  /* the headline is the page's largest paint: it comes into focus without starting fully transparent */
+  .pr-title[data-reveal] { animation-name: pr-focus; animation-delay: .12s; }
+  @keyframes pr-focus { from { opacity: .35; transform: translateY(14px); filter: blur(4px); } }
+  .pr-lead[data-reveal] { animation-delay: .22s; }
+  .pr-btns[data-reveal] { animation-delay: .32s; }
+  @keyframes pr-reveal { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
+  @media (prefers-reduced-motion: reduce) { [data-reveal] { animation: none; } }
 
   /* poster (first frame) follows the same lens shift as the live ribbon */
   [data-ribbon-poster] { transform: translate(-12vw, -7vh); }
@@ -109,15 +165,19 @@
 </script>
 </head>
 <body>
-<div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" fetchpriority="high"></div>
-<h1 class="sr-only">Mé práce — portfolio Grafysta</h1>
 <p class="hp-logo">Grafysta</p>
+<main>
+<div id="pr-hero"><!--SSR--></div>
+<section class="pr-gallery" id="galerie" aria-label="Galerie prací">
+<div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" loading="lazy"></div>
 <div id="hp-root"></div>
+</section>
+</main>
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/intro.js" defer></script>
 <script src="/assets/js/ribbon.js" defer></script>
 <script src="/assets/js/main.js" defer></script>
-<script src="/assets/vendor/gsap.min.js" defer></script>
 <script src="/assets/js/shader-card.js" defer></script>
 <script src="/assets/js/prace.js" defer></script>
-<script src="/assets/js/intro.js" defer></script>
 </body>
 </html>

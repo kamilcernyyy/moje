@@ -111,6 +111,8 @@
       backgroundColor: '#0a0a0a',
       seed: 0,
       dpr: 2,
+      // the gallery sits below the hero: the mouse wheel scrolls the page, not the ribbon
+      wheel: false,
       workerUrl: '/assets/js/ribbon-core.js',
       coreUrl: '/assets/js/ribbon-core.js',
       onReady: function () {

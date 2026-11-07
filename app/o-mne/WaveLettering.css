@@ -1,0 +1,3 @@
+/* Wave Lettering — the original's Tailwind utilities, written out */
+.wl-root { position: relative; isolation: isolate; width: 100%; height: 100%; min-height: 240px; overflow: hidden; }
+.wl-content { position: relative; z-index: 10; width: 100%; height: 100%; }

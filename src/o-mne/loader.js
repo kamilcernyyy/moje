@@ -24,10 +24,10 @@
       .call(done, null, '-=0.2');
   }
 
-  // start once Bebas is ready (max 1.2 s), so the question never swaps fonts mid-animation
+  // start once the font is ready (max 1.2 s), so the question never swaps fonts mid-animation
   var fonts = document.fonts;
   var ready = fonts && fonts.load
-    ? Promise.race([fonts.load('400 1em "BebasNeue-Regular"'), new Promise(function (r) { setTimeout(r, 1200); })])
+    ? Promise.race([fonts.load('400 1em "Odibee Sans CZ"'), new Promise(function (r) { setTimeout(r, 1200); })])
     : Promise.resolve();
   ready.then(run, run);
 })();

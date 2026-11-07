@@ -164,6 +164,7 @@
         core.resize(sz.w, sz.h, sz.dpr);
         self._send = function (m) { core.handle(m); };
         if (self._shift) core.setShift(self._shift[0], self._shift[1]);
+        if (self._arrive != null) core.setArrive(self._arrive);
       } catch (err) { self._fail(err); }
     };
     if (global.RibbonCore || !this.o.coreUrl) go();
@@ -179,7 +180,8 @@
   P._on = function (m) {
     var o = this.o;
     switch (m.type) {
-      case 'init': this._cell = [m.cellW, m.cellH]; if (this._shift && this._send) this._send({ type: 'shift', x: this._shift[0], y: this._shift[1] }); this._paintAll(); break;
+      case 'init': this._cell = [m.cellW, m.cellH]; if (this._shift && this._send) this._send({ type: 'shift', x: this._shift[0], y: this._shift[1] });
+        if (this._arrive != null && this._send) this._send({ type: 'arrive', a: this._arrive }); this._paintAll(); break;
       case 'error': if (this.worker) this._fallback(m.message); else this._fail(m.message); break;
       case 'focus': this._caption(m.item >= 0 ? o.items[m.item] : null); if (o.onFocusChange) o.onFocusChange(m.item >= 0 ? o.items[m.item] : null, m.item, m.card); break;
       case 'travel': if (o.onTravel) o.onTravel(o.items[m.item], m.item, m.card); break;
@@ -274,6 +276,7 @@
   P.reveal = function () { this._send && this._send({ type: 'reveal' }); };
   // shift the picture on screen, in NDC units (x: -1..1 left→right, y: -1..1 bottom→top)
   P.setShift = function (x, y) { this._shift = [x, y]; this._send && this._send({ type: 'shift', x: x, y: y }); };
+  P.setArrive = function (a) { this._arrive = a; this._send && this._send({ type: 'arrive', a: a }); };
   P.destroy = function () {
     this._dead = true;
     this._send && this._send({ type: 'destroy' });

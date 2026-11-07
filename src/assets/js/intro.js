@@ -37,6 +37,8 @@
         onStart: function () { window.dispatchEvent(new Event('hp-intro')); }
       });
     };
+    // the fog flight hands the gallery over itself
+    if (root.classList.contains('fly')) { window.addEventListener('pr-gallery-in', show, { once: true }); return; }
     var gallery = document.querySelector('.pr-gallery');
     if (!gallery || !('IntersectionObserver' in window)) { show(); return; }
     var io = new IntersectionObserver(function (entries) {

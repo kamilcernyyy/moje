@@ -7,7 +7,7 @@ const site = 'https://' + host.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.cpSync('src', 'dist', { recursive: true });
-for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js', 'assets/js/shader-card.js', 'assets/js/intro.js', 'o-mne/loader.js', 'assets/js/crane.js']) {
+for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js', 'assets/js/shader-card.js', 'assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js']) {
   const code = fs.readFileSync(path.join('src', f), 'utf8');
   fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
 }
@@ -83,7 +83,7 @@ const stamp = (file, refs) => {
 stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
 stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
-stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/crane.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
+stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
 
 console.log('dist ok →', site);

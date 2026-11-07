@@ -56,6 +56,10 @@ function createTunnel(canvas, o) {
   let pressed = false;
   let alive = true;
   let visible = true;
+  // scroll-driven flight on "Mé práce": 0 = the original tunnel, 1 = flown deep ahead into fog of the background colour
+  let fly = 0;
+  let chaseZ = 0;
+  const FLY_DIST = 9;
 
   const hw = TUNNEL_WIDTH / 2;
   const hh = TUNNEL_HEIGHT / 2;
@@ -230,7 +234,16 @@ function createTunnel(canvas, o) {
     scrollPos += pressed ? cfg.boost : cfg.speed;
 
     const want = -SCROLL_TO_Z * scrollPos;
-    camera.position.z += CAMERA_CHASE * (want - camera.position.z);
+    chaseZ += CAMERA_CHASE * (want - chaseZ);
+    camera.position.z = chaseZ - FLY_DIST * fly;
+    if (fly > 0) {
+      const k = fly * fly;
+      scene.fog.far = FOG_FAR + (1.05 - FOG_FAR) * k;
+      scene.fog.near = Math.min(fogNear * (1 - k), scene.fog.far - 0.01);
+    } else {
+      scene.fog.far = FOG_FAR;
+      scene.fog.near = fogNear;
+    }
 
     const span = NUM_SEGMENTS * SEGMENT_DEPTH;
     const z = camera.position.z;
@@ -266,6 +279,9 @@ function createTunnel(canvas, o) {
     setConfig: c => {
       cfg.speed = c.speed;
       cfg.boost = c.boost;
+    },
+    setFly: v => {
+      fly = Math.max(0, Math.min(1, +v || 0));
     },
     // off screen: stop drawing (the page keeps scrolling past the hero to the gallery)
     setVisible: v => {
@@ -305,6 +321,7 @@ if (inWorker) {
     else if (m.type === 'pressed') tunnel.setPressed(m.value);
     else if (m.type === 'config') tunnel.setConfig(m);
     else if (m.type === 'visible') tunnel.setVisible(m.value);
+    else if (m.type === 'fly') tunnel.setFly(m.value);
     else if (m.type === 'destroy') {
       tunnel.destroy();
       tunnel = null;

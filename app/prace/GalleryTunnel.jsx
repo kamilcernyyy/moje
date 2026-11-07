@@ -115,6 +115,7 @@ export default function ImageBox(props) {
         else if (m.type === 'pressed') tunnel.setPressed(m.value);
         else if (m.type === 'config') tunnel.setConfig(m);
         else if (m.type === 'visible') tunnel.setVisible(m.value);
+        else if (m.type === 'fly') tunnel.setFly(m.value);
       }
     };
     sendCfg.current = c => post({ type: 'config', speed: c.speed, boost: c.boost });
@@ -131,11 +132,22 @@ export default function ImageBox(props) {
     if (!worker) {
       loadCore()
         .then(create => {
-          if (alive && create) tunnel = create(canvas, init);
+          if (alive && create) {
+            tunnel = create(canvas, init);
+            if (fly) tunnel.setFly(fly);
+          }
         })
         .catch(() => {});
     }
 
+    // "Mé práce" scroll flight (flight.js) steers the camera forward into the fog
+    let fly = window.__tunnelFly || 0;
+    if (fly) post({ type: 'fly', value: fly });
+    const onFly = e => {
+      fly = e.detail;
+      post({ type: 'fly', value: fly });
+    };
+    window.addEventListener('tunnel-fly', onFly);
     const ro = new ResizeObserver(() => post({ type: 'resize', ...size() }));
     ro.observe(frame);
     const io = new IntersectionObserver(entries => post({ type: 'visible', value: entries.some(e => e.isIntersecting) }));
@@ -182,6 +194,7 @@ export default function ImageBox(props) {
     return () => {
       alive = false;
       sendCfg.current = null;
+      window.removeEventListener('tunnel-fly', onFly);
       ro.disconnect();
       io.disconnect();
       frame.removeEventListener('pointermove', onMove);

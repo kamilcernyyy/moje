@@ -483,6 +483,7 @@
   P.reveal = function () { this._reveal(true); };
   P.setVisible = function (v) { this.s.visible = !!v; };
   P.setShift = function (x, y) { this.shift = [x, y]; if (this.proj) { this.proj[8] = -x; this.proj[9] = -y; } };
+  P.setArrive = function (a) { this.arrive = Math.max(0, Math.min(1, +a || 0)); };
   P.destroy = function () { this._dead = true; clearTimeout(this._tourTimer); clearTimeout(this._holdTimer); };
 
   // message router used by the worker bootstrap and the main-thread fallback
@@ -497,6 +498,7 @@
       case 'reveal': this.reveal(); break;
       case 'visible': this.setVisible(m.v); break;
       case 'shift': this.setShift(m.x, m.y); break;
+      case 'arrive': this.setArrive(m.a); break;
       case 'destroy': this.destroy(); break;
     }
   };
@@ -552,12 +554,16 @@
       if (from) { pos = from.pos; tgt = from.target; up = from.up; }
       pos = mix(pos, fc.pos, st.f); tgt = mix(tgt, fc.target, st.f); up = norm(mix(up, fc.up, st.f));
     }
+    // arrival from deep fog (scroll-driven on "Mé práce"): pull the camera far back along its view
+    var arr = this.arrive || 0;
+    if (arr > 0) pos = add(tgt, mul(sub(pos, tgt), 1 + arr * 5));
     this.cam = { pos: pos, target: tgt, up: up };
 
     var sp = this.spacing, fg = Math.max(0.05, o.fog);
     var rideFog = [2.5 * sp, (26 * sp) / fg], overFog = [this.overDist + this.path.r * 0.4, this.overDist + this.path.r * 3.6 / fg];
     var fogR = [rideFog[0] + (overFog[0] - rideFog[0]) * m, rideFog[1] + (overFog[1] - rideFog[1]) * m];
     fogR[0] += 2 * st.f; fogR[1] += 4 * st.f;
+    if (arr > 0) { fogR[0] *= 1 - arr; fogR[1] *= 1 - arr * 0.94; }   // at arr = 1 everything sits inside the fog
     this._fog = fogR;
 
     var S = this._inst.state, dirty = false, k = 1 - Math.exp(-dt * 10);

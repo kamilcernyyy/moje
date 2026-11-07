@@ -27,5 +27,6 @@
 - P+Sch catering — cenová nabídka
 
 ## Odkazy
-- [Úvodní stránka a portfolio](https://grafysta.cz/): přehled studia a vybraných prací
+- [Úvodní stránka](https://grafysta.cz/): Grafysta, váš grafický stylista — kreativní designerská práce na webu i v tisku
+- [Mé práce](https://grafysta.cz/prace/): galerie vybraných prací
 - [Mapa webu](https://grafysta.cz/sitemap.xml)

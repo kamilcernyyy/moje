@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mé práce — portfolio Grafysta | weby, identity, motion</title>
+<meta name="description" content="Galerie prací Grafysty: weby na míru, vizuální identity, motion grafika a tiskoviny pro firmy, kavárny, restaurace a školy z Olomouckého kraje.">
+<link rel="canonical" href="https://grafysta.cz/prace/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Grafysta">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:site_name" content="Grafysta">
+<meta property="og:title" content="Mé práce — portfolio Grafysta">
+<meta property="og:description" content="Portfolio grafického studia z Olomouckého kraje: weby na míru, identity, motion grafika a tisk.">
+<meta property="og:url" content="https://grafysta.cz/prace/">
+<meta property="og:image" content="https://grafysta.cz/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Stuha obrázků vinoucí se 3D prostorem">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<script>
+  (function (d) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    d.classList.add('intro');
+    setTimeout(function () { d.classList.remove('intro'); }, 7000);
+  })(document.documentElement);
+</script>
+<link rel="stylesheet" href="/assets/js/prace.css" media="print" onload="this.media='all'">
+<link rel="preload" href="/fonts/bebas-neue/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+<style>
+  html, body { height: 100%; margin: 0; background: #0a0a0a; color: #fff; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; overflow: hidden; }
+  [data-ribbon-poster] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; animation: rp-in 1s ease both; }
+  @keyframes rp-in { from { filter: brightness(.12); } }
+  #depth-ribbon { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background-color: #0a0a0a; outline: none; }
+
+  @font-face { font-family: "BebasNeue-Regular"; src: url(/fonts/bebas-neue/BebasNeue-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  body { font-family: "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; }
+
+  /* layout 9 "Zásuvka": logo top left, glass drawer on the right (mobile: glass bottom sheet) */
+  .hp-logo { position: fixed; z-index: 3; margin: 0; pointer-events: none;
+    top: max(28px, env(safe-area-inset-top)); left: max(48px, env(safe-area-inset-left));
+    font: 400 40px/1 "BebasNeue-Regular", "Bebas Neue", Impact, "Arial Narrow", sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
+  #hp-root { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  .hp-btns { position: relative; z-index: 1; display: grid; }
+  .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
+  .hp-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
+  .hp-label { font: 400 28px/1 "BebasNeue-Regular", "Bebas Neue", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
+
+  /* flame panel (Shader Card) behind the glass buttons */
+  .hp-panel { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); pointer-events: auto; }
+  .hp-flame, .hp-flame.shader-card { position: absolute; inset: 0; }
+  .shader-card { overflow: hidden; isolation: isolate; border: 0.8px solid #1f1f1f; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+  .shader-card__flame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  /* glass panel under the flame: the flame is see-through, so the refracted ribbon shows above it */
+  .hp-panel-glass { position: absolute !important; inset: 0; }
+  .shader-card--clear { border: 0; box-shadow: none; pointer-events: none; }
+
+  /* mobile: floating flame card with a grip */
+  .hp-sheet { position: absolute; pointer-events: auto; transition: transform .45s cubic-bezier(.22,1,.36,1); }
+  .hp-sheet .hp-btns { position: absolute; inset: 0; align-content: start; }
+  .hp-sheet .hp-label { font-size: 24px; }
+  .hp-handle { position: absolute; left: 50%; top: 0; width: 96px; height: 26px; margin-left: -48px; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; z-index: 2; }
+  .hp-handle span { display: block; width: 44px; height: 5px; margin: 10px auto 0; border-radius: 3px; background: rgba(255,255,255,.55); }
+  .hp-sheet.is-collapsed, .ribbon-focus .hp-sheet { transform: translateY(calc(100% - 26px + 12px + env(safe-area-inset-bottom))); }
+
+  /* intro start state (removed by intro.js; failsafe in <head>) */
+  .intro .hp-logo { visibility: hidden; }
+  .intro .hp-panel, .intro .hp-sheet { opacity: 0; }
+  .hp-logo-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .04em; }
+  .hp-logo .ch { display: inline-block; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* poster (first frame) follows the same lens shift as the live ribbon */
+  [data-ribbon-poster] { transform: translate(-12vw, -7vh); }
+  @media (max-width: 760px) { [data-ribbon-poster] { transform: translate(0, -13vh); } }
+
+  @media (max-width: 760px) {
+    .hp-logo { top: max(24px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); font-size: 34px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hp-sheet { transition: none; } }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": "https://grafysta.cz/prace/#page",
+  "url": "https://grafysta.cz/prace/",
+  "name": "Mé práce",
+  "description": "Galerie prací grafického studia Grafysta: weby, vizuální identity, motion grafika a tiskoviny.",
+  "inLanguage": "cs",
+  "isPartOf": { "@id": "https://grafysta.cz/#web" },
+  "about": { "@id": "https://grafysta.cz/#studio" },
+  "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Grafysta", "item": "https://grafysta.cz/" },
+    { "@type": "ListItem", "position": 2, "name": "Mé práce", "item": "https://grafysta.cz/prace/" }
+  ] }
+}
+</script>
+</head>
+<body>
+<div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" fetchpriority="high"></div>
+<h1 class="sr-only">Mé práce — portfolio Grafysta</h1>
+<p class="hp-logo">Grafysta</p>
+<div id="hp-root"></div>
+<script src="/assets/js/ribbon.js" defer></script>
+<script src="/assets/js/main.js" defer></script>
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/shader-card.js" defer></script>
+<script src="/assets/js/prace.js" defer></script>
+<script src="/assets/js/intro.js" defer></script>
+</body>
+</html>

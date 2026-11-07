@@ -111,8 +111,8 @@
       backgroundColor: '#0a0a0a',
       seed: 0,
       dpr: 2,
-      workerUrl: 'assets/js/ribbon-core.js',
-      coreUrl: 'assets/js/ribbon-core.js',
+      workerUrl: '/assets/js/ribbon-core.js',
+      coreUrl: '/assets/js/ribbon-core.js',
       onReady: function () {
         document.documentElement.setAttribute('data-ribbon-ready', '');
         window.dispatchEvent(new Event('ribbon-ready'));

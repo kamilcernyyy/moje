@@ -625,9 +625,7 @@ const stepSimulation = (sim, dt, physics, time) => {
   for (let s = 0; s < steps; s++) {
     for (let i = 1; i < JOINTS; i++) {
       const v = velocities[i];
-      // Grafysta: gravity can point any way in the screen plane (the phone's real down, see `tilt`)
-      v.x += physics.gravityX * h;
-      v.y += physics.gravityY * h;
+      v.y -= physics.gravity * h;
       v.x += windX * h;
       v.z += windZ * h;
       previous[i].copy(nodes[i]);
@@ -659,8 +657,7 @@ const stepSimulation = (sim, dt, physics, time) => {
       const spin = body.angular.dot(up);
       body.angular.addScaledVector(up, (physics.twist * (sim.turn - sim.twist) - physics.twistDamping * spin) * h);
     }
-    body.velocity.x += physics.gravityX * h;
-    body.velocity.y += physics.gravityY * h;
+    body.velocity.y -= physics.gravity * h;
     body.velocity.x += windX * 0.35 * h;
     body.velocity.z += windZ * 0.35 * h;
     body.position.addScaledVector(body.velocity, h);
@@ -720,7 +717,6 @@ const Lanyard = ({
   strapWidth = 0.65,
   metal = 'silver',
   gravity = 1,
-  tilt,
   damping = 0.5,
   elasticity = 0.5,
   breeze = 0.5,
@@ -749,7 +745,6 @@ const Lanyard = ({
     strapWidth,
     metal,
     gravity,
-    tilt,
     damping,
     elasticity,
     breeze,
@@ -937,8 +932,6 @@ const Lanyard = ({
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);
       configureSimulation(sim, layout, anchorY - hangTop);
-      // Grafysta: anchor → card centre, for the camera that follows a tilted badge
-      sim.reach = anchorY - hangTop + layout.hangY;
       sim.nodes[0].copy(sim.anchor);
       sim.previous[0].copy(sim.anchor);
     };
@@ -1101,26 +1094,7 @@ const Lanyard = ({
       clampGroup.position.copy(hang);
     };
 
-    // Grafysta: when the phone tilts, the badge hangs toward the real ground and swings sideways from its anchor;
-    // the camera glides along by the same amount, so the card stays where it was on the screen and only turns level
-    const camShift = { x: 0, y: 0, moving: false };
-    const followTilt = () => {
-      const tilt = settingsRef.current.tilt;
-      const reach = sim.reach || 0;
-      const tx = tilt ? reach * tilt.x : 0;
-      const ty = tilt ? reach * (1 + tilt.y) : 0;
-      camShift.x += (tx - camShift.x) * 0.08;
-      camShift.y += (ty - camShift.y) * 0.08;
-      camShift.moving = Math.abs(tx - camShift.x) + Math.abs(ty - camShift.y) > 1e-3;
-      if (camera.position.x !== camShift.x || camera.position.y !== camShift.y) {
-        camera.position.x = camShift.x;
-        camera.position.y = camShift.y;
-        camera.updateMatrixWorld();
-      }
-    };
-
     const render = () => {
-      followTilt();
       cardGroup.position.copy(sim.body.position);
       cardGroup.quaternion.copy(sim.body.quaternion);
       updateBand();
@@ -1133,12 +1107,8 @@ const Lanyard = ({
       const weight = Math.max(gravity, 20);
       const springy = clamp(s.elasticity, 0, 1);
       const settle = clamp(s.damping, 0, 1);
-      // Grafysta: `tilt` = { x, y } unit vector of the real down in screen space (default straight down)
-      const down = s.tilt && Number.isFinite(s.tilt.x) && Number.isFinite(s.tilt.y) ? s.tilt : { x: 0, y: -1 };
       return {
         gravity,
-        gravityX: gravity * down.x,
-        gravityY: gravity * down.y,
         hold: weight * mix(2.2, 5.5, springy),
         stiffness: weight * 10 * JOINTS,
         spring: weight * mix(0.1, 0.4, springy) * JOINTS,
@@ -1172,7 +1142,7 @@ const Lanyard = ({
         placeHanging(sim, layout, false);
       }
       render();
-      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0 && !camShift.moving;
+      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0;
       if (visible && !resting) raf = requestAnimationFrame(tick);
     };
 
@@ -1182,8 +1152,6 @@ const Lanyard = ({
       last = performance.now();
       raf = requestAnimationFrame(tick);
     };
-    // Grafysta: a change of the phone's tilt wakes a resting badge
-    if (settingsRef.current.tilt) settingsRef.current.tilt.wake = start;
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();

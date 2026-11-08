@@ -75,10 +75,71 @@ function Clients() {
 // without WebGL the badge can't hang on its lanyard: the card itself is shown, still
 const CARD = <img className="om-badge-still" src="/o-mne/card-front.webp" alt="Grafysta, grafický designér a webdeveloper" width="1024" height="1440" />;
 const hasGL = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+// the phone's real "down" in screen space (accelerometer): the badge hangs toward the real ground, so the photo
+// stays level however the phone is tilted. Android starts at once, iPhone after one tap (motion permission).
+const TILT = { x: 0, y: -1, wake: null };
+const CAN_ASK = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+// iPhone/iPad: Safari reports gravity with the opposite sign and needs a tap for the permission
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const TOUCH = matchMedia('(hover: none) and (pointer: coarse)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+let tiltOn = false;
+const onMotion = e => {
+  const g = e.accelerationIncludingGravity;
+  if (!g || g.x == null || g.y == null) return;
+  // Android reports the push against gravity (up), iOS reports gravity itself: both turned into screen "up"
+  let ux = IOS ? -g.x : g.x, uy = IOS ? -g.y : g.y;
+  // landscape: device axes → screen axes
+  const a = ((screen.orientation && screen.orientation.angle) || window.orientation || 0) * Math.PI / 180;
+  const sx = ux * Math.cos(a) + uy * Math.sin(a), sy = -ux * Math.sin(a) + uy * Math.cos(a);
+  const len = Math.hypot(sx, sy);
+  // lying flat there is no clear down in the screen plane: ease back to straight down
+  const k = Math.min(1, Math.max(0, (len - 2) / 4));
+  let dx = len > 1e-3 ? (-sx / len) * k : 0, dy = len > 1e-3 ? (-sy / len) * k - (1 - k) : -1;
+  // never more than 75° off straight down, so the badge stays in the shot
+  let ang = Math.atan2(dx, -dy);
+  const max = 75 * Math.PI / 180;
+  ang = Math.max(-max, Math.min(max, ang));
+  dx = Math.sin(ang); dy = -Math.cos(ang);
+  // smooth out hand shake
+  const nx = TILT.x + (dx - TILT.x) * 0.2, ny = TILT.y + (dy - TILT.y) * 0.2, n = Math.hypot(nx, ny) || 1;
+  const moved = Math.abs(nx / n - TILT.x) + Math.abs(ny / n - TILT.y) > 0.002;
+  TILT.x = nx / n; TILT.y = ny / n;
+  if (moved && TILT.wake) TILT.wake();
+  if (Math.abs(ang) > 0.2) window.dispatchEvent(new Event('om-tilted'));
+};
+const startTilt = () => { if (tiltOn) return; tiltOn = true; addEventListener('devicemotion', onMotion, { passive: true }); };
+// listen right away (Android and anything that does not ask); a tap on the hint asks where a permission is needed
+if (TOUCH && typeof DeviceMotionEvent !== 'undefined') startTilt();
+
+// a small glass hint on phones: "tilt the phone" (on iPhone the tap asks for the motion permission)
+function TiltHint() {
+  const ref = useRef(null);
+  const [gone, setGone] = useState(false);
+  useEffect(() => {
+    if (!TOUCH || gone) return undefined;
+    const el = ref.current;
+    if (el && window.gsap) window.gsap.fromTo(el, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6, delay: 2.2, ease: 'power3.out' });
+    const hide = () => {
+      if (el && window.gsap) window.gsap.to(el, { opacity: 0, y: 8, duration: 0.4, ease: 'power2.in', onComplete: () => setGone(true) });
+      else setGone(true);
+    };
+    addEventListener('om-tilted', hide, { once: true });
+    return () => removeEventListener('om-tilted', hide);
+  }, [gone]);
+  if (!TOUCH || gone || typeof DeviceMotionEvent === 'undefined') return null;
+  const ask = () => {
+    if (!CAN_ASK) return;
+    DeviceMotionEvent.requestPermission().then(r => { if (r === 'granted') startTilt(); }).catch(() => {});
+  };
+  return IOS && CAN_ASK
+    ? <button ref={ref} type="button" className="om-tilt" onClick={ask}>Klepni a nakloň telefon</button>
+    : <p ref={ref} className="om-tilt" aria-hidden="true">Nakloň telefon</p>;
+}
+
 class Badge extends Component {
   constructor(p) { super(p); this.state = { failed: !hasGL }; }
   static getDerivedStateFromError() { return { failed: true }; }
-  render() { return this.state.failed ? CARD : <Lanyard frontImage="/o-mne/card-front.webp" />; }
+  render() { return this.state.failed ? CARD : <Lanyard frontImage="/o-mne/card-front.webp" tilt={TILT} />; }
 }
 
 // "Vybrané práce": the work covers in the React Bits FlexCarousel (liquid + rise); the centred card opens its work.
@@ -125,6 +186,7 @@ const show = () => root.render(
   <>
     <div className="om-badge">
       <Badge />
+      <TiltHint />
     </div>
     <Works />
     {/* clients: their logos rain in as glass pieces and can be thrown around */}

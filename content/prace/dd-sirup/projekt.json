@@ -1,0 +1,65 @@
+{
+  "nazev": "Doe & Deer",
+  "typ": "identita",
+  "typy": [
+    "identita",
+    "tisk",
+    "web"
+  ],
+  "klient": "Doe&Deer.co s.r.o.",
+  "logo": "dd",
+  "barvy": [
+    "#F47070",
+    "#F2D064",
+    "#A8CA8C",
+    "#3F5B43"
+  ],
+  "sluzby": [
+    "Logo",
+    "Ilustrace a vizualizace",
+    "Etikety",
+    "Webdesign e-shopu"
+  ],
+  "role": "Celá značka: logo, vizualizace, etikety, web",
+  "perex": "Česká značka prémiových sirupů a cordialů od prvního tahu: logo, ilustrované etikety pro celou řadu, vizualizace a web s e-shopem.",
+  "kapitoly": [
+    {
+      "nadpis": "Značka",
+      "text": "Doe & Deer stojí na kreslené srnce v akvarelové krajině. Každá příchuť má vlastní etiketu se stejnou scénou a košíkem ovoce, takže řada v regálu drží pohromadě a přitom se dá rozlišit na první pohled."
+    },
+    {
+      "nadpis": "Dvě řady",
+      "text": "Vedle domácí řady vznikla barmanská řada Chorche's. Rytinový portrét muže se sombrerem, kraftová etiketa a jiný tón pro bary a koktejly."
+    },
+    {
+      "nadpis": "Web a e-shop",
+      "text": "Web vede zákazníka třemi cestami: pro každého, pro barmany a pro podniky. Ukazuje, co se dá udělat z jednoho litru, a končí rovnou v e-shopu; srnky z vizualizací ho provázejí celou cestou."
+    }
+  ],
+  "web": "https://ddsirup.co/",
+  "webNazev": "ddsirup.co",
+  "poznamky": [
+    {
+      "x": 84,
+      "y": 11.2,
+      "text": "Tři cesty podle zákazníka"
+    },
+    {
+      "x": 64,
+      "y": 24,
+      "text": "Počet podniků ve sklenici, která se plní"
+    },
+    {
+      "x": 64,
+      "y": 47,
+      "text": "Co se dá udělat z jednoho litru"
+    },
+    {
+      "x": 72,
+      "y": 61,
+      "text": "Etikety rovnou v e-shopu"
+    }
+  ],
+  "poradi": 0,
+  "ukazka": false
+}

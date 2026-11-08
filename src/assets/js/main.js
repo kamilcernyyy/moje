@@ -84,7 +84,7 @@
   // the works (content/prace, injected at build time); the painted artworks only stand in when there are none
   var WORKS = window.__PRACE || [];
   var items = WORKS.length ? WORKS.map(function (w) {
-    return { src: w.obal, alt: w.nazev + ', ' + w.typLabel, title: w.nazev, subtitle: w.typLabel + ' · ' + w.rok, bg: w.barva, slug: w.slug, typ: w.typ };
+    return { src: w.obal, alt: w.nazev + ', ' + w.typLabel, title: w.nazev, subtitle: w.meta, bg: w.barva, slug: w.slug, typ: w.typ };
   }) : ART.map(function (a, i) {
     return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw,
       bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i] };
@@ -193,7 +193,7 @@
   var filterBtns = document.querySelectorAll('.pr-filter [data-typ]');
   function setFilter(t) {
     filterBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-typ') === t)); });
-    document.querySelectorAll('.ix-list li[data-typ]').forEach(function (li) { li.hidden = !!t && li.getAttribute('data-typ') !== t; });
+    document.querySelectorAll('.ix-list li[data-typ]').forEach(function (li) { li.hidden = !!t && li.getAttribute('data-typ').split(' ').indexOf(t) < 0; });
   }
   filterBtns.forEach(function (b) { b.addEventListener('click', function () { setFilter(b.getAttribute('data-typ')); }); });
   if (index && preview) {

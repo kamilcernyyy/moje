@@ -38,11 +38,15 @@ export function loadWorks(dir = 'content/prace') {
       return {
         ...p,
         slug,
-        typLabel: TYPES[p.typ] || p.typ,
+        typy: p.typy && p.typy.length ? p.typy : [p.typ],
+        // a work that spans several services (a whole brand) lists them all, short
+        typLabel: p.typy && p.typy.length > 1 ? p.typy.map(t => SHORT[t] || TYPES[t] || t).join(' · ') : TYPES[p.typ] || p.typ,
+        meta: [p.typy && p.typy.length > 1 ? p.typy.map(t => SHORT[t] || TYPES[t] || t).join(' · ') : TYPES[p.typ] || p.typ, p.rok].filter(Boolean).join(' · '),
         obal: `/prace/${slug}/` + (files.find(f => /^obal\./.test(f)) || files[0]),
         desktop: pick(/^desktop\./)[0] || null,
         mobil: pick(/^mobil-/),
         galerie: pick(/^galerie-/),
+        nahled: pick(/^web-cela\./)[0] || null,
         // a video next to a picture of the same name (galerie-2.mp4 by galerie-2.webp) plays in its place; the picture is its poster
         video: Object.fromEntries(pick(/^galerie-/).map(g => [g, g.replace(/\.[a-z0-9]+$/i, '.mp4')]).filter(([, v]) => fs.existsSync(path.join(dir, slug, path.basename(v))))),
         og: files.includes('og.jpg') ? `/prace/${slug}/og.jpg` : null,
@@ -56,12 +60,12 @@ export function loadWorks(dir = 'content/prace') {
 }
 
 // data the gallery page needs (ribbon cards, index); kept small and inline
-export const ribbonData = works => works.map(w => ({ slug: w.slug, nazev: w.nazev, typ: w.typ, typLabel: w.typLabel, klient: w.klient, rok: w.rok, obal: w.obal, barva: (w.barvy || [])[0] || '#1a1530' }));
+export const ribbonData = works => works.map(w => ({ slug: w.slug, nazev: w.nazev, typ: w.typ, typy: w.typy, typLabel: w.typLabel, meta: w.meta, klient: w.klient, rok: w.rok, obal: w.obal, barva: (w.barvy || [])[0] || '#1a1530' }));
 
 const SHORT = { identita: 'Identita' };
 // service filter chips (only the types that have works)
 export function filterHtml(works) {
-  const types = Object.keys(TYPES).filter(t => works.some(w => w.typ === t));
+  const types = Object.keys(TYPES).filter(t => works.some(w => w.typy.includes(t)));
   if (types.length < 2) return '';
   return `<div class="pr-filter" role="group" aria-label="Filtr podle služby"><button type="button" data-typ="" aria-pressed="true">Vše</button>` +
     types.map(t => `<button type="button" data-typ="${t}" aria-pressed="false">${SHORT[t] || TYPES[t]}</button>`).join('') + `</div>`;
@@ -69,9 +73,9 @@ export function filterHtml(works) {
 
 // the index ("Rejstřík"): real links in the HTML, so it works without WebGL and for crawlers
 export function indexHtml(works) {
-  return `<ol class="ix-list">${works.map((w, i) => `<li data-typ="${w.typ}"><a class="ix-item" href="/prace/${w.slug}/" data-img="${esc(w.obal)}" data-i="${i}">` +
+  return `<ol class="ix-list">${works.map((w, i) => `<li data-typ="${w.typy.join(' ')}"><a class="ix-item" href="/prace/${w.slug}/" data-img="${esc(w.obal)}" data-i="${i}">` +
     `<span class="ix-n">${String(i + 1).padStart(2, '0')}</span><span class="ix-name">${esc(w.nazev)}</span>` +
-    `<span class="ix-meta">${esc(w.typLabel)} · ${esc(w.rok)}</span><img class="ix-thumb" src="${esc(w.obal)}" alt="" loading="lazy" width="96" height="96"></a></li>`).join('')}</ol>`;
+    `<span class="ix-meta">${esc(w.meta)}</span><img class="ix-thumb" src="${esc(w.obal)}" alt="" loading="lazy" width="96" height="96"></a></li>`).join('')}</ol>`;
 }
 
 const MODULE = {
@@ -85,10 +89,13 @@ const MODULE = {
         <div class="dev-stage"><img class="dev-fallback" src="${esc(w.mobil[0] || w.obal)}" alt="${esc(w.nazev)} na telefonu" loading="lazy" width="${(w.size[w.mobil[0] || w.obal] || [390])[0]}" height="${(w.size[w.mobil[0] || w.obal] || [0, 844])[1]}"></div>
       </div>
       ${w.web ? `<div class="live">
-        <div class="live-head"><h2 class="dt-mod-h">Živý web</h2><p class="dt-mod-p">Opravdový web přímo v rámu: dá se v něm scrollovat a klikat. Čísla ukazují, co na něm stojí za pozornost.</p></div>
+        <div class="live-head"><h2 class="dt-mod-h">${w.nahled ? 'Web' : 'Živý web'}</h2><p class="dt-mod-p">${w.nahled ? 'Celá úvodní stránka v okně prohlížeče, dá se v ní posouvat. Živý web otevřeš vpravo nahoře.' : 'Opravdový web přímo v rámu: dá se v něm scrollovat a klikat.'} Čísla ukazují, co na něm stojí za pozornost.</p></div>
         <div class="live-win"><div class="live-bar"><i></i><i></i><i></i><span>${esc(w.webNazev || w.web.replace(/^https?:\/\//, ''))}</span><a href="${esc(w.web)}" target="_blank" rel="noopener">Otevřít ↗</a></div>
-          <div class="live-view"><iframe src="about:blank" data-src="${esc(w.web)}" title="Živý web ${esc(w.nazev)}" loading="lazy"></iframe>
-          ${(w.poznamky || []).map((n, i) => `<button type="button" class="live-pin" style="left:${+n.x}%;top:${+n.y}%" aria-label="${esc(n.text)}"><b>${i + 1}</b><span>${esc(n.text)}</span></button>`).join('')}</div></div>
+          ${w.nahled
+            ? `<div class="live-view live-scroll" tabindex="0" aria-label="Náhled celé stránky ${esc(w.webNazev || w.nazev)}, dá se v něm posouvat"><div class="live-page"><img src="${esc(w.nahled)}" alt="Celá úvodní stránka ${esc(w.webNazev || w.nazev)}" loading="lazy" width="${w.size[w.nahled][0]}" height="${w.size[w.nahled][1]}">
+          ${(w.poznamky || []).map((n, i) => `<button type="button" class="live-pin" style="left:${+n.x}%;top:${+n.y}%" aria-label="${esc(n.text)}"><b>${i + 1}</b><span>${esc(n.text)}</span></button>`).join('')}</div></div></div>`
+            : `<div class="live-view"><iframe src="about:blank" data-src="${esc(w.web)}" title="Živý web ${esc(w.nazev)}" loading="lazy"></iframe>
+          ${(w.poznamky || []).map((n, i) => `<button type="button" class="live-pin" style="left:${+n.x}%;top:${+n.y}%" aria-label="${esc(n.text)}"><b>${i + 1}</b><span>${esc(n.text)}</span></button>`).join('')}</div></div>`}
         ${(w.poznamky || []).length ? `<ol class="live-notes">${w.poznamky.map((n, i) => `<li><b>${i + 1}</b>${esc(n.text)}</li>`).join('')}</ol>` : ''}</div>` : ''}
     </section>`,
   tisk: w => `<section class="dt-module dt-tisk" aria-label="Tiskový stůl">
@@ -120,7 +127,7 @@ export function detailHtml(w, i, works, site) {
     '@context': 'https://schema.org',
     '@graph': [
       { '@type': 'CreativeWork', '@id': url + '#work', name: `${w.nazev} · ${w.typLabel}`, headline: w.nazev, description: desc, url, inLanguage: 'cs',
-        image: site + w.obal, dateCreated: String(w.rok), genre: w.typLabel, keywords: (w.sluzby || []).join(', '),
+        image: site + w.obal, ...(w.rok ? { dateCreated: String(w.rok) } : {}), genre: w.typLabel, keywords: (w.sluzby || []).join(', '),
         creator: { '@id': site + '/#studio' }, ...(w.klient ? { sourceOrganization: { '@type': 'Organization', name: w.klient } } : {}) },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Grafysta', item: site + '/' },
@@ -129,7 +136,7 @@ export function detailHtml(w, i, works, site) {
     ]
   };
   // the closing gallery shows what the module above doesn't: the depth gallery already flies through "galerie-*"
-  const gallery = (w.typ === 'web' ? [...(w.web ? [] : [w.desktop]), ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
+  const gallery = w.typy.length > 1 ? [] : (w.typ === 'web' ? [...(w.web ? [] : [w.desktop]), ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
   const rows = [];
   for (const g of gallery) {                      // rows of similar height: close a row once its aspect ratios add up to ~2.6
     const r = (w.size[g] || [16, 10]).reduce((a, b) => a / b);
@@ -180,26 +187,26 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
 <main id="obsah" class="dt">
   <header class="dt-hero">
     <div class="dt-head">
-      <p class="dt-kicker">${esc(w.typLabel)} · ${esc(w.rok)}${w.ukazka ? ' <span class="dt-badge">Ukázka</span>' : ''}</p>
+      <p class="dt-kicker">${esc(w.meta)}${w.ukazka ? ' <span class="dt-badge">Ukázka</span>' : ''}</p>
       <h1>${esc(w.nazev)}</h1>
       <p class="dt-perex">${esc(w.perex)}</p>
     </div>
     <dl class="dt-facts">
       <div><dt>Klient</dt><dd>${esc(w.klient)}</dd></div>
-      <div><dt>Rok</dt><dd>${esc(w.rok)}</dd></div>
+      ${w.rok ? `<div><dt>Rok</dt><dd>${esc(w.rok)}</dd></div>` : ''}
       <div><dt>Služby</dt><dd>${(w.sluzby || []).map(esc).join(', ')}</dd></div>
       <div><dt>Role</dt><dd>${esc(w.role)}</dd></div>
     </dl>
   </header>
   <figure class="dt-cover" style="--c:${esc((w.barvy || [])[0])}"><img src="${esc(w.obal)}" alt="${esc(w.nazev)}, hlavní obrázek" width="900" height="900" fetchpriority="high"></figure>
-  ${(MODULE[w.typ] || (() => ''))(w)}
+  ${w.typy.map(t => (MODULE[t] || (() => ''))(w)).join('\n  ')}
   <section class="dt-chapters" aria-label="Případová studie">
     ${(w.kapitoly || []).map(k => `<div class="dt-ch"><h2>${esc(k.nadpis)}</h2><p>${esc(k.text)}</p></div>`).join('\n    ')}
   </section>
   ${gallery.length ? `<section class="dt-gallery" aria-label="Galerie">${rows.map(r => `<div class="g-row">${r.items.map(g => fig(g, gk++)).join('')}</div>`).join('')}</section>` : ''}
   <footer class="dt-end">
     <a class="dt-next" href="/prace/${next.slug}/" style="--c:${esc((next.barvy || [])[0])}">
-      <span class="dt-next-k">Další projekt</span><span class="dt-next-name">${esc(next.nazev)}</span><span class="dt-next-meta">${esc(next.typLabel)} · ${esc(next.rok)}</span>
+      <span class="dt-next-k">Další projekt</span><span class="dt-next-name">${esc(next.nazev)}</span><span class="dt-next-meta">${esc(next.meta)}</span>
       <img src="${esc(next.obal)}" alt="" loading="lazy" width="${(next.size[next.obal] || [900])[0]}" height="${(next.size[next.obal] || [0, 900])[1]}">
     </a>
     <div class="dt-cta">
@@ -212,7 +219,7 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
 <script src="/assets/vendor/gsap.min.js" defer></script>
 <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/assets/js/detail.js" defer></script>
-${w.typ === 'web' ? '<script src="/assets/js/detail-web.js" defer></script>' : ''}${w.typ === 'tisk' ? '<link rel="stylesheet" href="/assets/js/detail-tisk.css" media="print" onload="this.media=\'all\'"><script src="/assets/js/detail-tisk.js" defer></script>' : ''}
+${w.typy.includes('web') && w.mobil.length ? '<script src="/assets/js/detail-web.js" defer></script>' : ''}${w.typy.includes('tisk') && w.kusy.length ? '<link rel="stylesheet" href="/assets/js/detail-tisk.css" media="print" onload="this.media=\'all\'"><script src="/assets/js/detail-tisk.js" defer></script>' : ''}
 </body>
 </html>
 `;

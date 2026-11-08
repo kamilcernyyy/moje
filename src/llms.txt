@@ -28,6 +28,6 @@
 
 ## Odkazy
 - [Úvodní stránka](https://grafysta.cz/): Grafysta, váš grafický stylista — kreativní designerská práce na webu i v tisku
-- [Mé práce](https://grafysta.cz/prace/): galerie vybraných prací (stuha i rejstřík, filtr podle služby)
+- [Mé práce](https://grafysta.cz/prace/): galerie všech prací na kole, které se otáčí scrollem, a seznam odkazů na jednotlivé práce
 - [O mně](https://grafysta.cz/o-mne/): kdo jsem, proč spolupracovat a s kým jsem pracoval
 - [Mapa webu](https://grafysta.cz/sitemap.xml)

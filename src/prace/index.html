@@ -20,7 +20,7 @@
 <meta property="og:image" content="https://grafysta.cz/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Stuha obrázků vinoucí se 3D prostorem">
+<meta property="og:image:alt" content="Portfolio Grafysta: kolo s pracemi, které se otáčí scrollem">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -34,15 +34,13 @@
   })(document.documentElement);
 </script>
 <link rel="stylesheet" href="/assets/js/prace.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/assets/js/tw.css" media="print" onload="this.media='all'">
 <link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
   html, body { margin: 0; background: #0a0a0a; color: #fff; }
   html { scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-  [data-ribbon-poster] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; animation: rp-in 1s ease both; }
-  @keyframes rp-in { from { filter: brightness(.12); } }
-  #depth-ribbon { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background-color: #0a0a0a; outline: none; }
 
   @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
   body { font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; }
@@ -51,48 +49,34 @@
   .hp-logo { position: fixed; z-index: 3; margin: 0; pointer-events: none;
     top: max(28px, env(safe-area-inset-top)); left: max(48px, env(safe-area-inset-left));
     font: 400 40px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
-  /* second part of the page: the ribbon gallery with its flame panel */
-  .pr-gallery { position: relative; height: 100svh; }
-  /* flight through fog (GSAP ScrollTrigger, flight.js): hero and gallery share one sticky stage; scroll steers both cameras */
-  html.fly { scroll-behavior: auto; }
-  .fly .pr-track { height: 250svh; }
-  .fly .pr-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
-  .fly #pr-hero, .fly .pr-gallery { position: absolute; inset: 0; }
-  .fly #pr-hero { z-index: 2; }
-  .fly .pr-gallery { z-index: 1; transform: translateY(100%); } /* waits out of the shot until the hand-over */
-  .fly [data-ribbon-poster] { display: none; } /* the ribbon arrives out of fog, never as a still */
-  #hp-root { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-  .hp-btns { position: relative; z-index: 1; display: grid; }
-  .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
-  .hp-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
-  .hp-eb { position: relative; }
-  .hp-eb > .hp-btn { width: 100%; } /* a <button> does not stretch on its own inside the wrapper */
-  .hp-label { font: 400 28px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
-
-  /* flame panel (Shader Card) behind the glass buttons */
-  .hp-panel { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); pointer-events: auto; }
-  .hp-flame, .hp-flame.shader-card { position: absolute; inset: 0; }
-  .shader-card { overflow: hidden; isolation: isolate; border: 0.8px solid #1f1f1f; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
-  .shader-card__flame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-  /* glass panel under the flame: the flame is see-through, so the refracted ribbon shows above it */
-  .hp-panel-glass { position: absolute !important; inset: 0; }
-  .shader-card--clear { border: 0; box-shadow: none; pointer-events: none; }
-
-  /* mobile: floating flame card with a grip */
-  .hp-sheet { position: absolute; pointer-events: auto; transition: transform .45s cubic-bezier(.22,1,.36,1); }
-  .hp-sheet .hp-btns { position: absolute; inset: 0; align-content: start; }
-  .hp-sheet .hp-label { font-size: 24px; }
-  .hp-handle { position: absolute; left: 50%; top: 0; width: 96px; height: 26px; margin-left: -48px; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; z-index: 2; }
-  .hp-handle span { display: block; width: 44px; height: 5px; margin: 10px auto 0; border-radius: 3px; background: rgba(255,255,255,.55); }
-  .hp-sheet.is-collapsed, .ribbon-focus .hp-sheet { transform: translateY(calc(100% - 26px + 12px + env(safe-area-inset-bottom))); }
-
-  /* intro start state (removed by intro.js; failsafe in <head>) */
   .intro .hp-logo { visibility: hidden; }
-  .intro .hp-panel, .intro .hp-sheet { opacity: 0; }
   .hp-logo-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .04em; }
   .hp-logo .ch { display: inline-block; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
+  /* flight through fog (GSAP ScrollTrigger, flight.js): the hero stays put (CSS sticky) while the scroll flies its
+     camera into the fog; the wheel of works below comes up out of the same fog */
+  html.fly { scroll-behavior: auto; }
+  .fly .pr-track { height: 200svh; }
+  .fly .pr-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+
+  /* the wheel of works (Radial Scroll Gallery, Tailwind in /assets/js/tw.css) */
+  .pr-gallery { position: relative; background: #0a0a0a; }
+  .pr-gallery-head { position: relative; z-index: 2; display: grid; justify-items: center; gap: 10px; padding: 18vh 24px 0; text-align: center; text-transform: uppercase; }
+  .pr-gallery-head p { margin: 0; font-size: 16px; letter-spacing: .32em; padding-left: .32em; color: rgba(242,242,243,.55); }
+  .pr-gallery-head h2 { margin: 0; font-weight: 400; font-size: clamp(56px, 9vw, 120px); line-height: .9; letter-spacing: .01em; }
+  .pr-gallery-head span { color: #B19EEF; }
+  #pr-wheel { min-height: 100svh; }
+  /* every work as a plain link too: crawlers, screen readers, no JS; shown as a list with reduced motion */
+  .pr-list { list-style: none; margin: 0; padding: 0; }
+  .pr-list a { color: #fff; text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .pr-list-wrap { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; padding: 0 24px 15vh; }
+    .pr-list { display: grid; gap: 14px; max-width: 900px; margin: 0 auto; font-size: clamp(32px, 6vw, 64px); line-height: 1; text-transform: uppercase; }
+    .pr-list span { display: block; font-size: 18px; letter-spacing: .06em; color: rgba(242,242,243,.6); }
+    #pr-wheel { display: none; } /* the wheel only turns with motion: the plain list takes its place */
+    .pr-gallery-head p { display: none; }
+  }
 
   /* hero 03 (Originkit) on top — the original's Tailwind utilities written out, Grafysta colours and type */
   .pr-hero { position: relative; isolation: isolate; width: 100%; overflow: hidden; background: #0a0a0a; }
@@ -147,69 +131,9 @@
   @media (prefers-reduced-motion: reduce) { [data-reveal] { animation: none; } }
 
 
-  /* opening a work from the ribbon */
-  .pr-open { position: absolute; z-index: 4; left: 50%; bottom: calc(6% + 72px); transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
-    display: flex; gap: 10px; align-items: baseline; white-space: nowrap; padding: 14px 24px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); cursor: pointer;
-    background: #5227FF; color: #fff; font: 400 22px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .04em;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 18px 40px -14px rgba(82,39,255,.9); transition: opacity .35s, transform .35s; }
-  .pr-open span { color: rgba(255,255,255,.75); }
-  .pr-open span:empty { display: none; }
-  .ribbon-focus .pr-open { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
-  .diving #hp-root, .diving .pr-open, .diving .pr-view, .diving .hp-logo, .diving .gm, .diving .ribbon-caption { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
-  .index-open #hp-root, .index-open .ribbon-caption, .index-open .pr-open { opacity: 0 !important; pointer-events: none; transition: opacity .3s; }
-  /* view switch: ribbon / index */
-  .pr-view { position: absolute; z-index: 5; left: 50%; top: max(22px, env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; gap: 2px; padding: 5px; border-radius: 999px;
-    background: rgba(20,20,24,.5); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
-  .pr-view button { font: 400 19px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .03em; color: rgba(242,242,243,.75);
-    background: none; border: 0; padding: 10px 16px 8px; border-radius: 999px; cursor: pointer; }
-  .pr-view button[aria-pressed="true"] { background: rgba(255,255,255,.14); color: #fff; }
-  .pr-view button:focus-visible, .ix-item:focus-visible, .pr-open:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
-  .pr-index { position: absolute; z-index: 3; inset: 0; overflow-y: auto; background: rgba(10,10,10,.94); padding: 140px max(24px, env(safe-area-inset-left, 0px)) 140px;
-    font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; }
-  .ix-list { list-style: none; margin: 0 auto; padding: 0; max-width: 1200px; }
-  .ix-item { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; align-items: baseline; gap: 16px; padding: 10px 0 6px; border-bottom: 1px solid rgba(255,255,255,.1);
-    color: rgba(242,242,243,.58); text-decoration: none; transition: color .25s, padding .35s; }
-  .ix-n { font-size: 20px; color: #B19EEF; font-variant-numeric: tabular-nums; }
-  .ix-name { font-size: clamp(54px, 9vw, 128px); line-height: .9; }
-  .ix-meta { font-size: 20px; letter-spacing: .06em; text-align: right; }
-  .ix-thumb { display: none; }
-  .ix-item:hover, .ix-item:focus-visible { color: #fff; padding-left: 16px; }
-  .ix-preview { position: fixed; z-index: 6; left: 0; top: 0; width: 280px; height: 280px; object-fit: cover; border-radius: 22px; pointer-events: none; opacity: 0;
-    box-shadow: 0 30px 80px -20px rgba(0,0,0,.8); transition: opacity .25s; }
-  .ix-preview.is-on { opacity: 1; }
-  @media (max-width: 760px) {
-    .pr-view { top: 74px; }
-    .pr-open { bottom: 104px; font-size: 19px; }
-    .pr-index { padding-top: 180px; }
-    .ix-item { grid-template-columns: 2.2em minmax(0, 1fr) 64px; align-items: center; }
-    .ix-meta { display: none; }
-    .ix-thumb { display: block; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
-    .ix-preview { display: none; }
-  }
-
-  /* service filter (variant 19) */
-  .pr-filter { position: absolute; z-index: 5; left: 50%; top: calc(max(22px, env(safe-area-inset-top, 0px)) + 62px); transform: translateX(-50%); display: flex; gap: 4px; flex-wrap: nowrap; max-width: calc(100vw - 32px); overflow-x: auto; scrollbar-width: none; }
-  .pr-filter::-webkit-scrollbar { display: none; }
-  .pr-filter button { flex: none; font: 400 17px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .04em; color: rgba(242,242,243,.6);
-    background: rgba(20,20,24,.35); border: 1px solid rgba(255,255,255,.12); padding: 9px 14px 7px; border-radius: 999px; cursor: pointer; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: color .25s, background .25s, border-color .25s; }
-  .pr-filter button:hover { color: #fff; }
-  .pr-filter button[aria-pressed="true"] { color: #fff; background: rgba(82,39,255,.55); border-color: rgba(177,158,239,.6); }
-  .pr-filter button:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
-  .ix-list li[hidden] { display: none; }
-  /* the filter belongs to the index; the ribbon stays whole */
-  html:not(.index-open) .pr-filter { display: none; }
-  .no-gl .pr-view [data-view="stuha"] { display: none; }
-  .diving .pr-filter { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
-  @media (max-width: 760px) { .pr-filter { top: 126px; } .pr-filter button { font-size: 15px; padding: 8px 10px 6px; } .pr-index { padding-top: 180px; } }
-
-  /* poster (first frame) follows the same lens shift as the live ribbon */
-  [data-ribbon-poster] { transform: translate(-12vw, -7vh); }
-  @media (max-width: 760px) { [data-ribbon-poster] { transform: translate(0, -13vh); } }
-
   @media (max-width: 760px) {
     .hp-logo { top: max(24px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); font-size: 34px; }
   }
-  @media (prefers-reduced-motion: reduce) { .hp-sheet { transition: none; } }
 </style>
 
 <script type="application/ld+json">
@@ -232,33 +156,23 @@
 </head>
 <body>
 <p class="hp-logo">Grafysta</p>
-<main class="pr-track">
+<main>
+<div class="pr-track">
 <div class="pr-stage">
 <div id="pr-hero"><!--SSR--></div>
-<section class="pr-gallery" id="galerie" aria-label="Galerie prací">
-<div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" loading="lazy"></div>
-<div id="hp-root"></div>
-<button class="pr-open" type="button"><b>Otevřít projekt</b> <span></span></button>
-<div class="pr-view glass-pill" role="group" aria-label="Zobrazení prací">
-  <button type="button" data-view="stuha" aria-pressed="true">Stuha</button><button type="button" data-view="rejstrik" aria-pressed="false">Rejstřík</button>
 </div>
-<!--FILTR-->
-<div class="pr-index" id="rejstrik" hidden>
-  <h2 class="sr-only">Rejstřík prací</h2>
-  <!--REJSTRIK-->
 </div>
-<img class="ix-preview" alt="" aria-hidden="true">
+<section class="pr-gallery" id="galerie" aria-labelledby="pr-gallery-h">
+  <div class="pr-gallery-head"><p>Scrolluj a otoč kolem</p><h2 id="pr-gallery-h">Všechny práce <span><!--POCET--></span></h2></div>
+  <div id="pr-wheel"></div>
+  <nav class="pr-list-wrap sr-only" aria-label="Seznam prací"><!--SEZNAM--></nav>
 </section>
-</div>
 </main>
 <script src="/assets/vendor/gsap.min.js" defer></script>
 <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/assets/js/intro.js" defer></script>
 <script src="/assets/js/flight.js" defer></script>
-<script src="/assets/js/ribbon.js" defer></script>
 <!--PRACE-->
-<script src="/assets/js/main.js" defer></script>
-<script src="/assets/js/shader-card.js" defer></script>
 <script src="/assets/js/prace.js" defer></script>
 </body>
 </html>

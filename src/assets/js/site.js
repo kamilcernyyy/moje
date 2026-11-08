@@ -26,7 +26,7 @@
       if (t === last) return;
       last = t;
       var inRibbon = t && t.closest && t.closest('#depth-ribbon');
-      var open = t && t.closest && (t.closest('a, button, [data-tw-item], .live-pin') || (inRibbon && getComputedStyle(t).cursor === 'pointer'));
+      var open = t && t.closest && (t.closest('a, button, [role="button"], [data-tw-item], .live-pin') || (inRibbon && getComputedStyle(t).cursor === 'pointer'));
       cur.classList.toggle('is-big', !!open);
       cur.textContent = inRibbon && open ? 'Otevřít' : '';
     }, { passive: true });

@@ -1,6 +1,6 @@
 // node build.mjs → dist/ (minified JS, absolute URLs set to the production domain)
-import fs from 'fs'; import path from 'path'; import crypto from 'crypto'; import { transformSync, buildSync } from 'esbuild'; import { pathToFileURL } from 'url';
-import { buildWorks, ribbonData, indexHtml, filterHtml } from './scripts/prace.mjs';
+import fs from 'fs'; import path from 'path'; import crypto from 'crypto'; import { transformSync, buildSync, build } from 'esbuild'; import { execSync } from 'child_process'; import { pathToFileURL } from 'url';
+import { buildWorks, ribbonData } from './scripts/prace.mjs';
 
 // Vercel sets VERCEL_PROJECT_PRODUCTION_URL (custom domain once one is added); SITE_URL overrides it
 const host = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || 'grafysta.cz';
@@ -11,16 +11,18 @@ fs.cpSync('src', 'dist', { recursive: true });
 
 // works: content/prace/<slug>/ → /prace/<slug>/ detail pages (+ data for the ribbon and the index below)
 const works = buildWorks(site);
-for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/main.js', 'assets/js/shader-card.js', 'assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js', 'assets/js/site.js', 'assets/js/detail.js', 'assets/js/detail-web.js']) {
+for (const f of ['assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js', 'assets/js/site.js', 'assets/js/detail.js', 'assets/js/detail-web.js']) {
   const code = fs.readFileSync(path.join('src', f), 'utf8');
   fs.writeFileSync(path.join('dist', f), transformSync(code, { minify: true, target: 'es2018', legalComments: 'inline' }).code);
 }
-// the gallery page gets the works list (ribbon cards) and the index as real links
+// the gallery page: the works for the wheel (inline data) and every work as a plain link (crawlers, no JS)
 {
   const p = path.join('dist', 'prace/index.html');
+  const e = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8')
     .replace('<!--PRACE-->', `<script>window.__PRACE=${JSON.stringify(ribbonData(works)).replace(/</g, '\\u003c')}</script>`)
-    .replace('<!--REJSTRIK-->', indexHtml(works)).replace('<!--FILTR-->', filterHtml(works)));
+    .replace('<!--POCET-->', String(works.length).padStart(2, '0'))
+    .replace('<!--SEZNAM-->', `<ul class="pr-list">${works.map(w => `<li><a href="/prace/${w.slug}/">${e(w.nazev)}</a> <span>${e(w.ukazka ? `${w.meta} · Ukázka` : w.meta)}</span></li>`).join('')}</ul>`));
 }
 // "O mně": the works for the "Vybrané práce" carousel (covers, names, links)
 {
@@ -68,7 +70,34 @@ const react = (entry, outfile) => buildSync({
 // headpage: Tile Reveal (React + GlassSurface buttons)
 react('app/home/main.jsx', 'dist/assets/js/home.js');
 // gallery of works (/prace/): flame panel with glass buttons over the Depth Ribbon
-react('app/prace/main.jsx', 'dist/assets/js/prace.js');
+// the wheel of works (21st.dev Radial Scroll Gallery, TSX + shadcn): one GSAP on the page, so 'gsap' and
+// 'gsap/ScrollTrigger' resolve to the copies the page already loads (/assets/vendor); '@/…' from tsconfig.json
+await build({
+  entryPoints: ['app/prace/main.jsx'],
+  bundle: true,
+  minify: true,
+  jsx: 'automatic',
+  target: 'es2020',
+  format: 'iife',
+  define: { 'process.env.NODE_ENV': '"production"' },
+  outfile: 'dist/assets/js/prace.js',
+  legalComments: 'none',
+  logLevel: 'warning',
+  plugins: [{
+    name: 'page-gsap',
+    setup(b) {
+      b.onResolve({ filter: /^gsap(\/ScrollTrigger)?$/ }, a => ({ path: a.path, namespace: 'page-gsap' }));
+      b.onLoad({ filter: /.*/, namespace: 'page-gsap' }, a => ({
+        contents: a.path === 'gsap'
+          ? 'const g = window.gsap; export default g; export { g as gsap };'
+          : 'const s = window.ScrollTrigger; export default s; export { s as ScrollTrigger };',
+        loader: 'js'
+      }));
+    }
+  }]
+});
+// Tailwind (shadcn tokens in Grafysta colours) for the wheel only
+execSync('npx tailwindcss -c tailwind.config.cjs -i app/prace/wheel.css -o dist/assets/js/tw.css --minify', { stdio: 'pipe' });
 // hero-03 tunnel scene: runs in a worker (or on the page as a fallback)
 react('app/prace/tunnel-core.js', 'dist/assets/js/tunnel-core.js');
 // detail of a web project: the 3D phone scene (worker, or on the page as a fallback)
@@ -124,13 +153,12 @@ const stamp = (file, refs) => {
   for (const r of refs) t = t.split(r).join(r + '?v=' + hash(r.replace(/^\//, '')));
   fs.writeFileSync(path.join('dist', file), t);
 };
-stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
 stamp('assets/js/ink.js', ['/assets/js/ink-core.js']);
 stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css', '/assets/js/ink.js']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
 stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
 stamp('assets/js/detail.js', ['/assets/js/detail-fx.js', '/assets/js/detail-fx.css']);
-stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
+stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/prace.js', '/assets/js/prace.css', '/assets/js/tw.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);
 for (const w of works) stamp(`prace/${w.slug}/index.html`, ['/assets/css/detail.css', '/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/detail.js', '/assets/js/detail-web.js', '/assets/js/detail-tisk.js', '/assets/js/detail-tisk.css'].filter(r => fs.existsSync(path.join('dist', r.slice(1)))));

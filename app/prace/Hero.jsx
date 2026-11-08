@@ -3,7 +3,7 @@ import GalleryTunnel from './GalleryTunnel.jsx';
 import GlassSurface from '../glass/GlassSurface.jsx';
 
 // Hero 03 (Originkit, section-12-hero) at the top of "Mé práce", in Grafysta colours and type.
-// Navbar → the page's own Grafysta logo; "Explore Gallery" → scrolls down to the ribbon gallery below.
+// Navbar → the page's own Grafysta logo; "Explore Gallery" → scrolls down to the wheel of works below.
 
 /** Matches `--breakpoint-ipad` / `--breakpoint-desktop-sm` of the original */
 const IPAD_MIN = 768;

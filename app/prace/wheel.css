@@ -1,0 +1,11 @@
+/* Tailwind for the wheel (components/ui + app/prace), built by build.mjs into /assets/js/tw.css.
+   No preflight (tailwind.config.cjs): the base layer only sets Tailwind's own variables. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Grafysta type on the wheel cards (Odibee has one weight: no faux bold) */
+.pr-wheel { font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; }
+.pr-wheel-title, .pr-wheel-meta, .pr-wheel-badge { font-weight: 400; text-transform: uppercase; letter-spacing: .04em; }
+.pr-wheel-badge { letter-spacing: .06em; }
+.pr-wheel img { -webkit-user-drag: none; user-select: none; }

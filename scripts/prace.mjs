@@ -62,7 +62,7 @@ export function loadWorks(dir = 'content/prace') {
 }
 
 // data the gallery page needs (ribbon cards, index); kept small and inline
-export const ribbonData = works => works.map(w => ({ slug: w.slug, nazev: w.nazev, typ: w.typ, typy: w.typy, typLabel: w.typLabel, meta: w.meta, klient: w.klient, rok: w.rok, obal: w.obal, barva: (w.barvy || [])[0] || '#1a1530' }));
+export const ribbonData = works => works.map(w => ({ ukazka: !!w.ukazka, slug: w.slug, nazev: w.nazev, typ: w.typ, typy: w.typy, typLabel: w.typLabel, meta: w.meta, klient: w.klient, rok: w.rok, obal: w.obal, barva: (w.barvy || [])[0] || '#1a1530' }));
 
 const SHORT = { identita: 'Identita' };
 // service filter chips (only the types that have works)
@@ -188,7 +188,7 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
 <!--MENU-->
 <a class="hp-logo" href="/">Grafysta</a>
 <nav class="dt-bar" aria-label="Projekty">
-  <a class="dt-back" href="/prace/?k=${esc(w.slug)}#galerie" data-key="Escape"><span aria-hidden="true">←</span> Stuha</a>
+  <a class="dt-back" href="/prace/?k=${esc(w.slug)}#galerie" data-key="Escape"><span aria-hidden="true">←</span> Mé práce</a>
   <span class="dt-title">${esc(w.nazev)} <i>· ${esc(w.typLabel)}</i></span>
   <span class="dt-count">${String(i + 1).padStart(2, '0')} / ${String(works.length).padStart(2, '0')}</span>
   <a class="dt-arrow" href="/prace/${prev.slug}/" rel="prev" aria-label="Předchozí projekt: ${esc(prev.nazev)}" data-key="ArrowLeft">‹</a>

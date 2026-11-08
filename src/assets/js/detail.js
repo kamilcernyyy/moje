@@ -4,13 +4,9 @@
   var root = document.documentElement;
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var slug = root.dataset.slug;
-  var remember = function () { try { sessionStorage.setItem('ribbon-return', slug); } catch (e) {} };
+  // ← Mé práce returns to the wheel with this work at the top (/prace/?k=slug)
 
-  // ← Stuha returns to this very card in the ribbon
-  var back = document.querySelector('.dt-back');
-  if (back) back.addEventListener('click', remember);
-
-  // keys: Esc back to the ribbon, arrows between projects
+  // keys: Esc back to the wheel, arrows between projects
   document.addEventListener('keydown', function (e) {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     var t = e.target;
@@ -18,7 +14,6 @@
     var a = document.querySelector('.dt-bar [data-key="' + e.key + '"]');
     if (!a) return;
     e.preventDefault();
-    if (a === back) remember();
     location.href = a.href;
   });
 

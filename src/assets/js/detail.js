@@ -64,20 +64,23 @@
     gsap.registerPlugin(ScrollTrigger);
     dg.classList.add('is-3d');
     var els = Array.prototype.slice.call(dg.querySelectorAll('.dg-item, .dg-line'));
-    var GAP = 1300, img = 0;
+    var GAP = 1300, narrow = innerWidth < 760, pass = narrow ? 150 : 320;   // how long a station lingers once the camera reaches it
+    // every station takes the other side than the one before, so a picture and a line never stand in each other's way;
+    // on a phone they stack in the middle instead and the lines float a bit higher
     var nodes = els.map(function (el, k) {
-      var line = el.classList.contains('dg-line');
-      var side = line ? 0 : (img++ % 2 ? 1 : -1);          // pictures alternate left / right, lines stay in the middle
-      return { el: el, z: -k * GAP, x: side * 15, y: line ? -2 : (img % 3 - 1) * 3 };
+      var line = el.classList.contains('dg-line'), side = k % 2 ? 1 : -1;
+      return { el: el, z: -k * GAP, x: narrow ? 0 : side * 24, y: narrow ? (line ? -16 : 6) : (line ? 0 : (k % 3 - 1) * 3) };
     });
-    var span = (els.length - 1) * GAP + 700;
+    // the flight ends with the last station in full view, then the page scrolls on
+    var span = (els.length - 1) * GAP;
+    dg.style.height = (100 + (els.length - 1) * 62) + 'vh';
     var state = { p: 0 };
     var render = function () {
       var cam = state.p * span;
       nodes.forEach(function (n) {
         var z = n.z + cam;
         // fades out as it passes the camera, comes out of the fog in the distance
-        var o = z > 320 ? 0 : z > 0 ? 1 - z / 320 : z < -2600 ? 0 : z < -1000 ? (z + 2600) / 1600 : 1;
+        var o = z > pass ? 0 : z > 0 ? 1 - z / pass : z < -2600 ? 0 : z < -1000 ? (z + 2600) / 1600 : 1;
         n.el.style.opacity = o.toFixed(3);
         n.el.style.zIndex = String(Math.round(5000 + z / 10));     // nearer draws on top
         n.el.style.visibility = o < 0.01 ? 'hidden' : 'visible';

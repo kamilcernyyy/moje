@@ -107,9 +107,11 @@ function Lightbox({ item, pages, name, onClose }) {
   );
 }
 
-function Desk({ pieces, pages, name }) {
+function Desk({ pieces, shown, pages, name }) {
   const [sel, setSel] = useState(null);
-  const items = pieces.map((src, i) => ({ src, alt: `${name}, tiskovina ${i + 1}`, title: '' }));
+  // on the desk every piece lies upright in a card (a landscape card is turned on its side); the lightbox shows it as made
+  const items = pieces.map((src, i) => ({ src: shown[i] || src, full: src, alt: `${name}, tiskovina ${i + 1}`, title: '' }));
+  const lift = item => item && setSel({ ...item, src: item.full || item.src });
   const wrap = useRef(null);
   // a short tap on a piece lifts it into the lightbox (the wall captures the pointer while dragging, so clicks
   // don't reach the piece itself); keyboard Enter / Space still goes through the wall's own onSelect
@@ -124,7 +126,7 @@ function Desk({ pieces, pages, name }) {
     const onUp = e => {
       if (!down) return;
       const tap = performance.now() - down.t < 350 && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8;
-      if (tap) setSel(items[down.i % items.length]);
+      if (tap) lift(items[down.i % items.length]);
       down = null;
     };
     el.addEventListener('pointerdown', onDown, true);
@@ -135,10 +137,22 @@ function Desk({ pieces, pages, name }) {
     <div ref={wrap} style={{ position: 'absolute', inset: 0 }}>
       <TumbleWall items={items} count={Math.min(14, items.length * 2)} shape="card" size={190} sizeVariance={0.5} radius={5} frame="none"
         showTitles={false} shadow={1} gravity={0} gravityX={0} drift={0.25} airFriction={0.05} bounce={0.4} spin={0.8}
-        entrance="burst" ariaLabel={`${name}, tiskoviny na stole`} onSelect={item => setSel(item)} />
+        entrance="burst" ariaLabel={`${name}, tiskoviny na stole`} onSelect={lift} />
       {sel && <Lightbox item={sel} pages={pages} name={name} onClose={() => setSel(null)} />}
     </div>
   );
+}
+
+// a landscape piece (a business card…) is turned a quarter, so the portrait card on the desk shows all of it
+function upright(src) {
+  return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b)).then(bmp => {
+    if (bmp.width <= bmp.height) return src;
+    const c = document.createElement('canvas');
+    c.width = bmp.height; c.height = bmp.width;
+    const g = c.getContext('2d');
+    g.translate(c.width, 0); g.rotate(Math.PI / 2); g.drawImage(bmp, 0, 0);
+    return new Promise(res => c.toBlob(b => res(b ? URL.createObjectURL(b) : src), 'image/webp', 0.92));
+  }).catch(() => src);
 }
 
 const host = document.querySelector('.desk');
@@ -150,7 +164,7 @@ if (host) {
     const el = document.createElement('div');
     el.className = 'desk-live';
     host.appendChild(el);
-    createRoot(el).render(<Desk pieces={pieces} pages={pages} name={host.dataset.name || ''} />);
+    Promise.all(pieces.map(upright)).then(shown => createRoot(el).render(<Desk pieces={pieces} shown={shown} pages={pages} name={host.dataset.name || ''} />));
   };
   // mount when the desk comes near the screen
   const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); mount(); } }, { rootMargin: '300px' });

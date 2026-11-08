@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavárna Pára (ukázkový web)</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { --dark: #2B1D16; --cream: #E8C39E; --orange: #FF8A3D; --paper: #F6EADB; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--paper); color: var(--dark); font: 17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: inherit; }
+  .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 5vw; background: rgba(246,234,219,.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(43,29,22,.08); }
+  .logo { font: 700 22px/1 Georgia, "Times New Roman", serif; letter-spacing: .02em; text-decoration: none; }
+  .bar nav { display: flex; gap: 22px; font-size: 15px; }
+  .bar nav a { text-decoration: none; opacity: .8; }
+  .open { font-size: 14px; background: var(--dark); color: var(--cream); padding: 7px 14px; border-radius: 999px; white-space: nowrap; }
+  .open::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6BD38A; margin-right: 8px; vertical-align: 1px; }
+  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 4vw; align-items: center; padding: 3.5vw 5vw 4vw; }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 700; line-height: 1; margin: 0; }
+  h1 { font-size: clamp(42px, 5.2vw, 76px); letter-spacing: -.01em; }
+  h1 em { font-style: italic; color: var(--orange); }
+  .lead { font-size: 19px; max-width: 34ch; margin: 18px 0 26px; opacity: .85; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-block; padding: 15px 26px; border-radius: 999px; background: var(--orange); color: var(--dark); font-weight: 700; text-decoration: none; box-shadow: 0 14px 30px -14px rgba(255,138,61,.9); }
+  .btn.ghost { background: none; border: 2px solid var(--dark); box-shadow: none; }
+  .hero img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 28px; box-shadow: 0 40px 80px -40px rgba(43,29,22,.6); }
+  section { padding: 5vw; }
+  .menu { background: var(--dark); color: var(--cream); }
+  .menu h2, .hours h2 { font-size: clamp(34px, 4vw, 56px); margin-bottom: 28px; }
+  .menu ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 5vw; }
+  .menu li { display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid rgba(232,195,158,.2); }
+  .menu li span { opacity: .7; }
+  .hours { display: grid; grid-template-columns: 1fr 1fr; gap: 5vw; }
+  .hours dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 12px 30px; font-size: 19px; }
+  .hours dt { font-weight: 700; }
+  .card { background: var(--cream); border-radius: 24px; padding: 32px; }
+  footer { padding: 30px 5vw 40px; font-size: 14px; opacity: .7; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .demo { position: fixed; right: 12px; bottom: 12px; font-size: 12px; background: var(--dark); color: var(--cream); padding: 6px 10px; border-radius: 6px; opacity: .85; }
+  @media (max-width: 720px) {
+    .bar nav { display: none; }
+    .hero, .hours { grid-template-columns: 1fr; }
+    .hero img { order: -1; }
+    .menu ul { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="logo" href="#">Pára</a>
+  <nav><a href="#menu">Menu</a><a href="#doba">Otevírací doba</a><a href="#rezervace">Rezervace</a></nav>
+  <span class="open">Dnes otevřeno 7–18</span>
+</header>
+<main>
+  <div class="hero">
+    <div>
+      <h1>Káva, která <em>voní</em> už z ulice.</h1>
+      <p class="lead">Malá kavárna v centru. Výběrová káva, domácí dorty a místo, kde se dá na chvíli zastavit.</p>
+      <div class="btns"><a class="btn" href="#rezervace">Rezervovat stůl</a><a class="btn ghost" href="#menu">Co dnes máme</a></div>
+    </div>
+    <img src="../obal.webp" alt="Logo kavárny Pára" width="900" height="900">
+  </div>
+  <section class="menu" id="menu">
+    <h2>Menu</h2>
+    <ul>
+      <li>Espresso <span>55 Kč</span></li><li>Flat white <span>79 Kč</span></li>
+      <li>Cappuccino <span>72 Kč</span></li><li>Domácí limonáda <span>69 Kč</span></li>
+      <li>Dort dne <span>89 Kč</span></li><li>Croissant s máslem <span>49 Kč</span></li>
+    </ul>
+  </section>
+  <section class="hours" id="doba">
+    <div><h2>Otevírací doba</h2>
+      <dl><dt>Po–Pá</dt><dd>7–18</dd><dt>So</dt><dd>8–16</dd><dt>Ne</dt><dd>9–14</dd></dl></div>
+    <div class="card" id="rezervace"><h2 style="font-size:34px;margin-bottom:12px">Rezervace</h2>
+      <p>Stůl rezervujete jedním klepnutím, potvrzení přijde do SMS.</p><a class="btn" href="#rezervace">Vybrat čas</a></div>
+  </section>
+</main>
+<footer><span>Kavárna Pára · Najdete nás v centru, 2 minuty od zastávky.</span><span>© 2026</span></footer>
+<span class="demo">Ukázkový web</span>
+</body>
+</html>

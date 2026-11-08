@@ -31,19 +31,20 @@
       "text": "Hosté najdou vše podstatné bez telefonátu a kavárna má místo, kam může posílat lidi ze sociálních sítí."
     }
   ],
-  "web": "/",
+  "web": "/prace/para-kavarna/web/",
   "poznamky": [
     {
-      "x": 50,
-      "y": 12,
+      "x": 33,
+      "y": 4,
       "text": "Menu a otevírací doba hned nahoře"
     },
     {
-      "x": 72,
-      "y": 62,
+      "x": 3.6,
+      "y": 61,
       "text": "Rezervace jedním tlačítkem"
     }
   ],
   "poradi": 1,
-  "ukazka": true
+  "ukazka": true,
+  "webNazev": "kavarna-para.cz"
 }

@@ -79,7 +79,7 @@
       ticking = false;
       var r = dev.getBoundingClientRect(), vh = innerHeight;
       var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
-      if (post && !reduce) post({ type: 'scroll', v: (p - 0.5) * 0.9 });
+      if (post && !reduce) post({ type: 'scroll', v: (p - 0.5) * 0.5 });
       if (!manual && screens.length > 1) show(Math.min(screens.length - 1, Math.max(0, Math.floor((p - 0.25) / 0.5 * screens.length))));
     });
   }, { passive: true });

@@ -31,19 +31,20 @@
       "text": "Poptávky přicházejí s výkresy a parametry a web funguje i v angličtině pro zahraniční odběratele."
     }
   ],
-  "web": "/",
+  "web": "/prace/kovo-strojirna/web/",
   "poznamky": [
     {
-      "x": 30,
-      "y": 40,
+      "x": 3.4,
+      "y": 67,
       "text": "Technologie s parametry"
     },
     {
-      "x": 70,
-      "y": 78,
+      "x": 47,
+      "y": 10,
       "text": "Poptávka s nahráním výkresu"
     }
   ],
   "poradi": 2,
-  "ukazka": true
+  "ukazka": true,
+  "webNazev": "kovo-strojirna.cz"
 }

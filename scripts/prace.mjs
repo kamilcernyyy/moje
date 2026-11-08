@@ -4,6 +4,27 @@ import fs from 'fs';
 import path from 'path';
 
 export const TYPES = { web: 'Web', identita: 'Vizuální identita', motion: 'Motion', tisk: 'Tisk' };
+// pixel size of an image file (webp / png / jpeg), so every <img> gets width and height
+export function imageSize(file) {
+  try {
+    const b = fs.readFileSync(file);
+    if (b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP') {
+      const t = b.toString('ascii', 12, 16);
+      if (t === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+      if (t === 'VP8L') { const v = b.readUInt32LE(21); return [(v & 0x3fff) + 1, ((v >> 14) & 0x3fff) + 1]; }
+      if (t === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    }
+    if (b.readUInt32BE(0) === 0x89504e47) return [b.readUInt32BE(16), b.readUInt32BE(20)];
+    if (b[0] === 0xff && b[1] === 0xd8) {
+      for (let i = 2; i < b.length;) {
+        const m = b[i + 1], len = b.readUInt16BE(i + 2);
+        if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+        i += 2 + len;
+      }
+    }
+  } catch (e) {}
+  return [1600, 1000];
+}
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function loadWorks(dir = 'content/prace') {
@@ -24,7 +45,8 @@ export function loadWorks(dir = 'content/prace') {
         galerie: pick(/^galerie-/),
         kusy: pick(/^kus-/),
         strany: pick(/^strana-/),
-        dir: path.join(dir, slug)
+        dir: path.join(dir, slug),
+        size: Object.fromEntries(files.map(f => [`/prace/${slug}/${f}`, imageSize(path.join(dir, slug, f))]))
       };
     })
     .sort((a, b) => (a.poradi ?? 999) - (b.poradi ?? 999) || a.nazev.localeCompare(b.nazev, 'cs'));
@@ -52,20 +74,25 @@ export function indexHtml(works) {
 const MODULE = {
   web: w => `<section class="dt-module dt-web" aria-label="Web v zařízení">
       <div class="dev" data-screens='${esc(JSON.stringify(w.mobil))}' data-color="${esc((w.barvy || [])[0])}">
-        <div class="dev-stage"><img class="dev-fallback" src="${esc(w.mobil[0] || w.obal)}" alt="${esc(w.nazev)} na telefonu" loading="lazy"></div>
-        <ol class="dev-steps">${w.mobil.map((_, i) => `<li><button type="button" data-screen="${i}" aria-label="Obrazovka ${i + 1}">${['Úvod', 'Nabídka', 'Kontakt', 'Detail', 'Mobil'][i] || 'Obrazovka ' + (i + 1)}</button></li>`).join('')}</ol>
+        <div class="dev-side">
+          <h2 class="dt-mod-h">Na telefonu</h2>
+          <p class="dt-mod-p">Vyber obrazovku a telefon se k ní otočí.</p>
+          <ol class="dev-steps">${w.mobil.map((_, i) => `<li><button type="button" data-screen="${i}"${i ? '' : ' aria-current="true"'}>${['Úvod', 'Nabídka', 'Kontakt', 'Detail', 'Mobil'][i] || 'Obrazovka ' + (i + 1)}</button></li>`).join('')}</ol>
+        </div>
+        <div class="dev-stage"><img class="dev-fallback" src="${esc(w.mobil[0] || w.obal)}" alt="${esc(w.nazev)} na telefonu" loading="lazy" width="${(w.size[w.mobil[0] || w.obal] || [390])[0]}" height="${(w.size[w.mobil[0] || w.obal] || [0, 844])[1]}"></div>
       </div>
       ${w.web ? `<div class="live">
-        <div class="live-win"><div class="live-bar"><i></i><i></i><i></i><span>${esc(w.web.replace(/^https?:\/\//, ''))}</span><a href="${esc(w.web)}" target="_blank" rel="noopener">Otevřít ↗</a></div>
+        <div class="live-head"><h2 class="dt-mod-h">Živý web</h2><p class="dt-mod-p">Opravdový web přímo v rámu: dá se v něm scrollovat a klikat. Čísla ukazují, co na něm stojí za pozornost.</p></div>
+        <div class="live-win"><div class="live-bar"><i></i><i></i><i></i><span>${esc(w.webNazev || w.web.replace(/^https?:\/\//, ''))}</span><a href="${esc(w.web)}" target="_blank" rel="noopener">Otevřít ↗</a></div>
           <div class="live-view"><iframe src="about:blank" data-src="${esc(w.web)}" title="Živý web ${esc(w.nazev)}" loading="lazy"></iframe>
           ${(w.poznamky || []).map((n, i) => `<button type="button" class="live-pin" style="left:${+n.x}%;top:${+n.y}%" aria-label="${esc(n.text)}"><b>${i + 1}</b><span>${esc(n.text)}</span></button>`).join('')}</div></div>
-        <p class="live-note">Živý web přímo v rámu. Dá se v něm scrollovat a klikat.</p></div>` : ''}
+        ${(w.poznamky || []).length ? `<ol class="live-notes">${w.poznamky.map((n, i) => `<li><b>${i + 1}</b>${esc(n.text)}</li>`).join('')}</ol>` : ''}</div>` : ''}
     </section>`,
   tisk: w => `<section class="dt-module dt-tisk" aria-label="Tiskový stůl">
       <div class="desk" data-pieces='${esc(JSON.stringify(w.kusy))}' data-pages='${esc(JSON.stringify(w.strany))}' data-name="${esc(w.nazev)}">
-        <div class="desk-fallback">${w.kusy.map(k => `<img src="${esc(k)}" alt="" loading="lazy">`).join('')}</div>
+        <div class="desk-fallback">${w.kusy.map(k => `<img src="${esc(k)}" alt="" loading="lazy" width="${w.size[k][0]}" height="${w.size[k][1]}">`).join('')}</div>
       </div>
-      <p class="desk-hint">Tiskoviny leží na stole. Chyť je a hoď, kliknutím zvedneš kus k sobě${w.strany.length ? ', brožuru si prolistuješ' : ''}.</p>
+      <div class="desk-head"><h2 class="dt-mod-h">Tiskový stůl</h2><p class="dt-mod-p">Tiskoviny leží na stole. Chyť je a hoď, klepnutím zvedneš kus k sobě${w.strany.length ? ' a brožuru si prolistuješ' : ''}.</p></div>
     </section>`,
   identita: w => depth(w),
   motion: w => depth(w)
@@ -73,7 +100,8 @@ const MODULE = {
 function depth(w) {
   const lines = (w.kapitoly || []).map(k => k.text.split('. ')[0].replace(/\.$/, '') + '.');
   return `<section class="dt-module dt-depth" aria-label="Hloubková galerie">
-      <div class="dg"><div class="dg-stage">${w.galerie.map((g, i) => `<figure class="dg-item" data-i="${i}"><img src="${esc(g)}" alt="${esc(w.nazev)}, ukázka ${i + 1}" loading="lazy" width="1600" height="1000"></figure>` +
+      <div class="dg-head"><h2 class="dt-mod-h">Průlet prací</h2><p class="dt-mod-p">Scrolluj a proleť projektem od zadání po výsledek.</p></div>
+      <div class="dg"><div class="dg-stage">${w.galerie.map((g, i) => `<figure class="dg-item" data-i="${i}"><img src="${esc(g)}" alt="${esc(w.nazev)}, ukázka ${i + 1}" loading="lazy" width="${w.size[g][0]}" height="${w.size[g][1]}"></figure>` +
         (lines[i] ? `<p class="dg-line" data-i="${i}">${esc(lines[i])}</p>` : '')).join('')}</div></div>
     </section>`;
 }
@@ -95,7 +123,17 @@ export function detailHtml(w, i, works, site) {
         { '@type': 'ListItem', position: 3, name: w.nazev, item: url }] }
     ]
   };
-  const gallery = [w.desktop, ...w.mobil, ...w.galerie, ...w.kusy].filter(Boolean);
+  // the closing gallery shows what the module above doesn't: the depth gallery already flies through "galerie-*"
+  const gallery = (w.typ === 'web' ? [w.desktop, ...w.mobil, ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
+  const rows = [];
+  for (const g of gallery) {                      // rows of similar height: close a row once its aspect ratios add up to ~2.6
+    const r = (w.size[g] || [16, 10]).reduce((a, b) => a / b);
+    if (!rows.length || rows[rows.length - 1].sum >= 2.6) rows.push({ sum: 0, items: [] });
+    rows[rows.length - 1].items.push(g); rows[rows.length - 1].sum += r;
+  }
+  if (rows.length > 1 && rows[rows.length - 1].sum < 2) { const last = rows.pop(); rows[rows.length - 1].items.push(...last.items); }
+  let gk = 0;
+  const fig = (g, k) => { const [gw, gh] = w.size[g] || [1600, 1000]; return `<figure style="--r:${(gw / gh).toFixed(3)}"${gw / gh > 1.2 ? ' class="is-wide"' : gw / gh < 0.6 ? ' class="is-tall"' : ''}><img src="${esc(g)}" alt="${esc(w.nazev)}, obrázek ${k + 1}" loading="lazy" width="${gw}" height="${gh}"></figure>`; };
   return `<!doctype html>
 <html lang="cs" data-slug="${esc(w.slug)}">
 <head>
@@ -153,11 +191,11 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
   <section class="dt-chapters" aria-label="Případová studie">
     ${(w.kapitoly || []).map(k => `<div class="dt-ch"><h2>${esc(k.nadpis)}</h2><p>${esc(k.text)}</p></div>`).join('\n    ')}
   </section>
-  ${gallery.length ? `<section class="dt-gallery" aria-label="Galerie">${gallery.map((g, k) => `<img src="${esc(g)}" alt="${esc(w.nazev)}, obrázek ${k + 1}" loading="lazy" class="${/mobil-|kus-/.test(g) ? 'is-tall' : ''}">`).join('')}</section>` : ''}
+  ${gallery.length ? `<section class="dt-gallery" aria-label="Galerie">${rows.map(r => `<div class="g-row">${r.items.map(g => fig(g, gk++)).join('')}</div>`).join('')}</section>` : ''}
   <footer class="dt-end">
     <a class="dt-next" href="/prace/${next.slug}/" style="--c:${esc((next.barvy || [])[0])}">
       <span class="dt-next-k">Další projekt</span><span class="dt-next-name">${esc(next.nazev)}</span><span class="dt-next-meta">${esc(next.typLabel)} · ${esc(next.rok)}</span>
-      <img src="${esc(next.obal)}" alt="" loading="lazy" width="900" height="900">
+      <img src="${esc(next.obal)}" alt="" loading="lazy" width="${(next.size[next.obal] || [900])[0]}" height="${(next.size[next.obal] || [0, 900])[1]}">
     </a>
     <div class="dt-cta">
       <p>Chceš něco podobného?</p>
@@ -182,6 +220,8 @@ export function buildWorks(site, out = 'dist') {
     const dir = path.join(out, 'prace', w.slug);
     fs.mkdirSync(dir, { recursive: true });
     for (const f of fs.readdirSync(w.dir)) if (/\.(webp|jpe?g|png|avif)$/i.test(f)) fs.copyFileSync(path.join(w.dir, f), path.join(dir, f));
+    // an optional static site of the work (web/), shown in the live frame
+    if (fs.existsSync(path.join(w.dir, 'web'))) fs.cpSync(path.join(w.dir, 'web'), path.join(dir, 'web'), { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), detailHtml(w, i, works, site));
   });
   return works;

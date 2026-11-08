@@ -92,7 +92,7 @@ function createDevice(canvas, o) {
     }
     spin = spinFrom + (Math.PI * 2) * ease(spinT);
     const t = now / 1000;
-    phone.rotation.set(-0.08 + ty * 0.25 + Math.sin(t * 0.7) * 0.02, -0.35 + scrollYaw + tx * 0.45 + spin, 0.04 + Math.sin(t * 0.5) * 0.015);
+    phone.rotation.set(-0.06 + ty * 0.2 + Math.sin(t * 0.7) * 0.02, -0.22 + scrollYaw + tx * 0.35 + spin, 0.03 + Math.sin(t * 0.5) * 0.015);
     phone.position.y = Math.sin(t * 0.9) * 0.025;
     renderer.render(scene, camera);
   };
@@ -102,7 +102,7 @@ function createDevice(canvas, o) {
     if (dpr) renderer.setPixelRatio(Math.min(dpr, 2));
     renderer.setSize(Math.max(1, w), Math.max(1, h), false);
     camera.aspect = Math.max(1, w) / Math.max(1, h);
-    camera.position.z = camera.aspect < 0.75 ? 5.6 : 4.4;
+    camera.position.z = Math.max(5.3, 2.8 / camera.aspect);   // the whole phone fits, with air around it, in any shape of stage
     camera.updateProjectionMatrix();
   };
   resize(o.width, o.height, o.dpr);

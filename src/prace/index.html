@@ -147,13 +147,14 @@
 
   /* opening a work from the ribbon */
   .pr-open { position: absolute; z-index: 4; left: 50%; bottom: calc(6% + 72px); transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
-    display: flex; gap: 10px; align-items: baseline; padding: 14px 24px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); cursor: pointer;
+    display: flex; gap: 10px; align-items: baseline; white-space: nowrap; padding: 14px 24px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); cursor: pointer;
     background: #5227FF; color: #fff; font: 400 22px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .04em;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 18px 40px -14px rgba(82,39,255,.9); transition: opacity .35s, transform .35s; }
   .pr-open span { color: rgba(255,255,255,.75); }
   .pr-open span:empty { display: none; }
   .ribbon-focus .pr-open { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
   .diving #hp-root, .diving .pr-open, .diving .pr-view, .diving .hp-logo, .diving .gm, .diving .ribbon-caption { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
+  .index-open #hp-root, .index-open .ribbon-caption, .index-open .pr-open { opacity: 0 !important; pointer-events: none; transition: opacity .3s; }
   /* view switch: ribbon / index */
   .pr-view { position: absolute; z-index: 5; left: 50%; top: max(22px, env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; gap: 2px; padding: 5px; border-radius: 999px;
     background: rgba(20,20,24,.5); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
@@ -165,7 +166,7 @@
     font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; }
   .ix-list { list-style: none; margin: 0 auto; padding: 0; max-width: 1200px; }
   .ix-item { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; align-items: baseline; gap: 16px; padding: 10px 0 6px; border-bottom: 1px solid rgba(255,255,255,.1);
-    color: rgba(242,242,243,.42); text-decoration: none; transition: color .25s, padding .35s; }
+    color: rgba(242,242,243,.58); text-decoration: none; transition: color .25s, padding .35s; }
   .ix-n { font-size: 20px; color: #B19EEF; font-variant-numeric: tabular-nums; }
   .ix-name { font-size: clamp(54px, 9vw, 128px); line-height: .9; }
   .ix-meta { font-size: 20px; letter-spacing: .06em; text-align: right; }
@@ -177,7 +178,7 @@
   @media (max-width: 760px) {
     .pr-view { top: 74px; }
     .pr-open { bottom: 104px; font-size: 19px; }
-    .pr-index { padding-top: 130px; }
+    .pr-index { padding-top: 180px; }
     .ix-item { grid-template-columns: 2.2em minmax(0, 1fr) 64px; align-items: center; }
     .ix-meta { display: none; }
     .ix-thumb { display: block; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
@@ -194,7 +195,7 @@
   .pr-filter button:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
   .ix-list li[hidden] { display: none; }
   .diving .pr-filter { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
-  @media (max-width: 760px) { .pr-filter { top: 126px; justify-content: flex-start; } .pr-index { padding-top: 180px; } }
+  @media (max-width: 760px) { .pr-filter { top: 126px; } .pr-filter button { font-size: 15px; padding: 8px 10px 6px; } .pr-index { padding-top: 180px; } }
 
   /* poster (first frame) follows the same lens shift as the live ribbon */
   [data-ribbon-poster] { transform: translate(-12vw, -7vh); }

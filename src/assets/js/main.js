@@ -154,6 +154,7 @@
         focused = item;
         document.documentElement.classList.toggle('ribbon-focus', !!item);
         if (openBtn) openBtn.querySelector('span').textContent = item ? item.title : '';
+        if (!!item !== !!focusedShift) { focusedShift = !!item; frame(); }
       },
       onOpen: function (item) { open(item); },
       onDived: function () { if (window.__onDived) window.__onDived(); }
@@ -161,11 +162,14 @@
     if (!posterMode) frame();
   }
   // lens shift so the nearest cards travel clear of the button panel
-  // desktop: picture moves left and up; mobile: up, above the floating panel
+  // desktop: picture moves left and up; mobile: up, above the floating panel.
+  // A focused card settles lower, between the switches on top and the open button below.
+  var shiftNow = null, focusedShift = false;
   function frame() {
     var r = window.__ribbon; if (!r || !r.setShift) return;
-    if (matchMedia('(max-width: 760px)').matches) r.setShift(0, 0.26);
-    else r.setShift(-0.24, 0.14);
+    var t = matchMedia('(max-width: 760px)').matches ? (focused ? [0, 0.03] : [0, 0.26]) : (focused ? [-0.24, 0.06] : [-0.24, 0.14]);
+    if (!shiftNow || !window.gsap) { shiftNow = { x: t[0], y: t[1] }; r.setShift(t[0], t[1]); return; }
+    window.gsap.to(shiftNow, { x: t[0], y: t[1], duration: 0.9, ease: 'power2.inOut', overwrite: true, onUpdate: function () { r.setShift(shiftNow.x, shiftNow.y); } });
   }
   addEventListener('resize', frame);
 

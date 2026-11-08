@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 // Works ("Mé práce") from content/prace/<slug>/ → detail pages, ribbon data, index, sitemap and llms entries.
 // Every folder holds projekt.json + images (see content/README.md); the folder name is the page address.
 import fs from 'fs';
@@ -53,6 +54,7 @@ export function loadWorks(dir = 'content/prace') {
         kusy: pick(/^kus-/),
         strany: pick(/^strana-/),
         dir: path.join(dir, slug),
+        hash: Object.fromEntries(files.map(f => [`/prace/${slug}/${f}`, crypto.createHash('sha1').update(fs.readFileSync(path.join(dir, slug, f))).digest('hex')])),
         size: Object.fromEntries(files.map(f => [`/prace/${slug}/${f}`, imageSize(path.join(dir, slug, f))]))
       };
     })
@@ -135,8 +137,17 @@ export function detailHtml(w, i, works, site) {
         { '@type': 'ListItem', position: 3, name: w.nazev, item: url }] }
     ]
   };
-  // the closing gallery shows what the module above doesn't: the depth gallery already flies through "galerie-*"
-  const gallery = w.typy.length > 1 ? [] : (w.typ === 'web' ? [...(w.web ? [] : [w.desktop]), ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
+  // the closing gallery ("Všechny obrázky"): every picture of the work in one place, each once (FlexCarousel on top,
+  // these rows stay as the crawlable / no-WebGL version)
+  const seen = new Set();
+  const gallery = [...(w.typy.includes('web') && !w.web && !w.nahled ? [w.desktop] : []), ...w.galerie, ...w.kusy].filter(Boolean)
+    .filter(g => { const h = w.hash[g] || g; if (seen.has(h)) return false; seen.add(h); return true; });
+  const label = g => {
+    const v = (w.popisky || {})[path.basename(g).replace(/\.[a-z0-9]+$/i, '')];
+    const [title, sub] = Array.isArray(v) ? v : [v];
+    return { title: title || w.nazev, subtitle: sub || '' };
+  };
+  const shots = gallery.map((g, k) => ({ src: g, alt: `${label(g).title} · ${w.nazev}`, ...label(g) }));
   const rows = [];
   for (const g of gallery) {                      // rows of similar height: close a row once its aspect ratios add up to ~2.6
     const r = (w.size[g] || [16, 10]).reduce((a, b) => a / b);
@@ -144,8 +155,7 @@ export function detailHtml(w, i, works, site) {
     rows[rows.length - 1].items.push(g); rows[rows.length - 1].sum += r;
   }
   if (rows.length > 1 && rows[rows.length - 1].sum < 2) { const last = rows.pop(); rows[rows.length - 1].items.push(...last.items); }
-  let gk = 0;
-  const fig = (g, k) => { const [gw, gh] = w.size[g] || [1600, 1000]; return `<figure style="--r:${(gw / gh).toFixed(3)}"${gw / gh > 1.2 ? ' class="is-wide"' : gw / gh < 0.6 ? ' class="is-tall"' : ''}><img src="${esc(g)}" alt="${esc(w.nazev)}, obrázek ${k + 1}" loading="lazy" width="${gw}" height="${gh}"></figure>`; };
+  const fig = (g, k) => { const [gw, gh] = w.size[g] || [1600, 1000]; return `<figure style="--r:${(gw / gh).toFixed(3)}"${gw / gh > 1.2 ? ' class="is-wide"' : gw / gh < 0.6 ? ' class="is-tall"' : ''}><img src="${esc(g)}" alt="${esc(shots[k].alt)}" loading="lazy" width="${gw}" height="${gh}"></figure>`; };
   return `<!doctype html>
 <html lang="cs" data-slug="${esc(w.slug)}">
 <head>
@@ -203,7 +213,10 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
   <section class="dt-chapters" aria-label="Případová studie">
     ${(w.kapitoly || []).map(k => `<div class="dt-ch"><h2>${esc(k.nadpis)}</h2><p>${esc(k.text)}</p></div>`).join('\n    ')}
   </section>
-  ${gallery.length ? `<section class="dt-gallery" aria-label="Galerie">${rows.map(r => `<div class="g-row">${r.items.map(g => fig(g, gk++)).join('')}</div>`).join('')}</section>` : ''}
+  ${gallery.length ? `<section class="dt-gallery-wrap" aria-labelledby="g-h">
+    <div class="g-head"><h2 class="dt-mod-h" id="g-h">Všechny obrázky</h2><p class="dt-mod-p">Táhni do stran nebo listuj šipkami. Klepnutím obrázek zvětšíš.</p></div>
+    <div class="dt-gallery" data-flex="${esc(JSON.stringify(shots))}">${rows.map(r => `<div class="g-row">${r.items.map(g => fig(g, gallery.indexOf(g))).join('')}</div>`).join('')}</div>
+  </section>` : ''}
   <footer class="dt-end">
     <a class="dt-next" href="/prace/${next.slug}/" style="--c:${esc((next.barvy || [])[0])}">
       <span class="dt-next-k">Další projekt</span><span class="dt-next-name">${esc(next.nazev)}</span><span class="dt-next-meta">${esc(next.meta)}</span>

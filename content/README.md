@@ -26,6 +26,7 @@ Ve složce je `projekt.json` a obrázky. Build z toho sám vytvoří kartu do st
 
 - `obal.webp`: čtverec, karta ve stuze a hlavní obrázek detailu
 - `og.jpg` (nepovinné): 1200 × 630, obrázek při sdílení odkazu na sociálních sítích (jinak se použije obal)
+- `popisky` v projekt.json (nepovinné): názvy obrázků pro galerii „Všechny obrázky“ na konci detailu, klíč je jméno souboru bez přípony, např. `"kus-1": ["Jahoda", "Etiketa · Doe & Deer"]` (název a podtitulek) nebo jen `"galerie-2": "Celá řada"`. Galerie ukáže všechny obrázky práce (galerie-N, kus-N), stejný obrázek jen jednou.
 - web: `desktop.webp` (16:10) a `mobil-1.webp`, `mobil-2.webp`, … (telefon v zařízení); nepovinně `web-cela.webp` (celá stránka jako jeden dlouhý obrázek; použije se místo živého rámu, když web vložení do rámu nedovoluje, `poznamky` jsou pak v procentech obrázku), nebo složka `web/` se statickou kopií webu, která se ukáže v rámu (adresa pak `/prace/<slug>/web/`)
 - identita a motion: `galerie-1.webp`, `galerie-2.webp`, … (hloubková galerie); u motion prací může vedle obrázku ležet video se stejným jménem (`galerie-2.mp4`), které se pak přehraje na jeho místě (obrázek slouží jako náhled). Video krátké, bez zvuku, ideálně do 1–2 MB
 - tisk: `kus-1.webp`, `kus-2.webp`, … (kusy na stole) a `strana-1.webp`, `strana-2.webp`, … (listovatelná tiskovina)

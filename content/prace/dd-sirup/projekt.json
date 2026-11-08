@@ -61,5 +61,63 @@
     }
   ],
   "poradi": 0,
-  "ukazka": false
+  "ukazka": false,
+  "popisky": {
+    "galerie-1": [
+      "Srnky s fotoaparátem",
+      "Ilustrace"
+    ],
+    "galerie-2": [
+      "Celá řada",
+      "Lahve Doe & Deer a Chorche's"
+    ],
+    "galerie-3": [
+      "Jahoda",
+      "Etiketa · Doe & Deer"
+    ],
+    "galerie-4": [
+      "Blue Curaçao",
+      "Etiketa · Chorche's"
+    ],
+    "galerie-5": [
+      "Mr. Deer",
+      "Ilustrace pro zákaznickou podporu"
+    ],
+    "galerie-6": [
+      "Srnka v sadu",
+      "Vizualizace pro web"
+    ],
+    "kus-1": [
+      "Jahoda",
+      "Etiketa · Doe & Deer"
+    ],
+    "kus-2": [
+      "Blue Curaçao",
+      "Etiketa · Chorche's"
+    ],
+    "kus-3": [
+      "Bezinka",
+      "Etiketa · Doe & Deer"
+    ],
+    "kus-4": [
+      "Lime Cordial",
+      "Etiketa · Chorche's"
+    ],
+    "kus-5": [
+      "Borůvka",
+      "Etiketa · Doe & Deer"
+    ],
+    "kus-6": [
+      "Grapefruit Cordial",
+      "Etiketa · Chorche's"
+    ],
+    "kus-7": [
+      "Kokos",
+      "Etiketa · Doe & Deer"
+    ],
+    "kus-8": [
+      "Fík",
+      "Etiketa · Doe & Deer"
+    ]
+  }
 }

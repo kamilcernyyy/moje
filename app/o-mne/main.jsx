@@ -3,6 +3,7 @@ import { Component, useEffect, useRef, useState } from 'react';
 import Lanyard from './Lanyard.jsx';
 import WaveLettering from './WaveLettering.jsx';
 import TumbleWall from './TumbleWall.js';
+import FlexCarousel from '../fx/FlexCarousel.jsx';
 
 // client logos as glass (scripts/glass-logo.py turns a black logo into these); placeholders until the real ones arrive
 const LOGOS = [
@@ -80,12 +81,52 @@ class Badge extends Component {
   render() { return this.state.failed ? CARD : <Lanyard frontImage="/o-mne/card-front.webp" />; }
 }
 
+// "Vybrané práce": the work covers in the React Bits FlexCarousel (liquid + rise); the centred card opens its work.
+// Mounted when the section comes near, so its images and WebGL never compete with the badge.
+const PRACE = (() => { try { return JSON.parse(document.getElementById('om-prace').textContent); } catch (e) { return []; } })();
+const NARROW = matchMedia('(max-width: 760px)').matches; // phone: the glass edge sits outside the centred card
+const hasGL2 = (() => { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; } })();
+function Works() {
+  const ref = useRef(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) { setNear(true); return undefined; }
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { setNear(true); io.disconnect(); } }, { rootMargin: '400px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => { const c = ref.current && ref.current.querySelector('.flex-carousel'); if (c) c.setAttribute('aria-label', 'Vybrané práce'); });
+  if (!PRACE.length) return null;
+  if (!hasGL2) return (
+    <section className="om-works" aria-labelledby="om-works-h">
+      <div className="om-works-head"><h2 id="om-works-h">Vybrané práce</h2><p><a href="/prace/">Všechny práce →</a></p></div>
+      <ul className="om-works-list">{PRACE.map(w => <li key={w.href}><a href={w.href}>{w.title}</a> <span>{w.subtitle}</span></li>)}</ul>
+    </section>
+  );
+  return (
+    <section className="om-works" aria-labelledby="om-works-h">
+      <div className="om-works-head">
+        <h2 id="om-works-h">Vybrané práce</h2>
+        <p>Klepni na práci uprostřed · <a href="/prace/">Všechny práce →</a></p>
+      </div>
+      <div className="om-works-stage" ref={ref}>
+        {near ? (
+          <FlexCarousel items={PRACE} preset="liquid" intro="rise" cardHeight={NARROW ? 0.4 : 0.56} lensWidth={NARROW ? 1.02 : undefined} gap={12} squeeze={0.2}
+            focusOnClick={false} captureWheel={false} captions onSelect={(i, item) => { if (item && item.href) location.href = item.href; }} />
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 const root = createRoot(document.getElementById('root'));
 const show = () => root.render(
   <>
     <div className="om-badge">
       <Badge />
     </div>
+    <Works />
     {/* clients: their logos rain in as glass pieces and can be thrown around */}
     <Clients />
     {/* footer at the very end of the page: a sea of Grafysta lettering */}

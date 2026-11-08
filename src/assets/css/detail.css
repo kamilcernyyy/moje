@@ -58,6 +58,17 @@ h1 { margin: 0; font-weight: 400; font-size: clamp(88px, 15vw, 220px); line-heig
 .dt-ch h2 { margin: 0; font-weight: 400; font-size: clamp(40px, 4vw, 60px); line-height: .9; text-transform: uppercase; }
 .dt-ch p { margin: 0; color: var(--fg-2); max-width: 36ch; }
 .dt-gallery { display: grid; gap: 16px; }
+.dt-gallery-wrap { display: grid; gap: 22px; }
+.dt-gallery[hidden] { display: none; }
+/* FlexCarousel (React Bits) over the gallery rows: full width of the page, captions in the site type */
+.g-host { margin: 0 calc(50% - 50vw); }
+.g-flex { position: relative; width: 100%; height: min(78vh, 760px); }
+@media (max-width: 760px) { .g-flex { height: 72svh; } .g-flex .flex-carousel__title { font-size: 24px; } }
+.g-flex .flex-carousel { color: var(--fg); }
+.g-flex .flex-carousel:focus-visible { box-shadow: inset 0 0 0 2px var(--lilac, #B19EEF); }
+.g-flex .flex-carousel__title { font-family: var(--font); font-size: 28px; font-weight: 400; line-height: 1; letter-spacing: .04em; text-transform: uppercase; gap: 6px; }
+.g-flex .flex-carousel__subtitle { font-size: 16px; letter-spacing: .06em; opacity: .62; }
+.g-flex .flex-carousel__count { font-family: var(--font); font-size: 16px; letter-spacing: .08em; opacity: .62; }
 .g-row { display: flex; gap: 16px; align-items: flex-start; }
 .g-row figure { margin: 0; flex: var(--r) 1 0; min-width: 0; }
 .dt-gallery img { border-radius: 18px; width: 100%; background: #141417; }

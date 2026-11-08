@@ -100,15 +100,16 @@
     dg.querySelectorAll('video').forEach(function (v) { v.controls = true; v.preload = 'metadata'; });
   }
 
-  // booking CTA: the Electric Border (React Bits) is fetched only when the CTA comes near, so it never weighs on the first load
-  var cta = document.querySelector('[data-electric]');
-  if (cta && 'IntersectionObserver' in window) {
-    var ctaIo = new IntersectionObserver(function (es) {
+  // end of the page: the FlexCarousel gallery and the Electric Border CTA (React Bits) are fetched only when the
+  // gallery or the CTA comes near, so they never weigh on the first load
+  var fxEls = document.querySelectorAll('.dt-gallery[data-flex], [data-electric]');
+  if (fxEls.length && 'IntersectionObserver' in window) {
+    var fxIo = new IntersectionObserver(function (es) {
       if (!es.some(function (e) { return e.isIntersecting; })) return;
-      ctaIo.disconnect();
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/js/cta.css'; document.head.appendChild(l);
-      var s = document.createElement('script'); s.src = '/assets/js/cta.js'; s.defer = true; document.head.appendChild(s);
-    }, { rootMargin: '600px 0px' });
-    ctaIo.observe(cta);
+      fxIo.disconnect();
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/js/detail-fx.css'; document.head.appendChild(l);
+      var s = document.createElement('script'); s.src = '/assets/js/detail-fx.js'; s.defer = true; document.head.appendChild(s);
+    }, { rootMargin: '900px 0px' });
+    fxEls.forEach(function (el) { fxIo.observe(el); });
   }
 })();

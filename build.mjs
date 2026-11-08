@@ -22,6 +22,12 @@ for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/m
     .replace('<!--PRACE-->', `<script>window.__PRACE=${JSON.stringify(ribbonData(works)).replace(/</g, '\\u003c')}</script>`)
     .replace('<!--REJSTRIK-->', indexHtml(works)).replace('<!--FILTR-->', filterHtml(works)));
 }
+// "O mně": the works for the "Vybrané práce" carousel (covers, names, links)
+{
+  const p = path.join('dist', 'o-mne/index.html');
+  const pick = works.map(w => ({ src: w.obal, alt: `${w.nazev}, ${w.meta}`, title: w.nazev, subtitle: w.ukazka ? `${w.meta} · Ukázka` : w.meta, href: `/prace/${w.slug}/` }));
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('<!--VYBER-->', `<script type="application/json" id="om-prace">${JSON.stringify(pick).replace(/</g, '\\u003c')}</script>`));
+}
 // sitemap: real works only (sample projects stay out of search)
 {
   const p = path.join('dist', 'sitemap.xml');
@@ -69,8 +75,8 @@ react('app/prace/tunnel-core.js', 'dist/assets/js/tunnel-core.js');
 react('app/prace/device-core.js', 'dist/assets/js/device-core.js');
 // detail of a print project: the desk (Tumble Wall), loupe and brochure
 react('app/prace/detail-tisk.jsx', 'dist/assets/js/detail-tisk.js');
-// booking CTAs on the work details: Electric Border (loaded when the CTA comes near)
-react('app/fx/cta.jsx', 'dist/assets/js/cta.js');
+// work details, end of the page: FlexCarousel gallery + Electric Border CTA (loaded when the end comes near)
+react('app/fx/detail-fx.jsx', 'dist/assets/js/detail-fx.js');
 
 // above-the-fold markup is pre-rendered (first paint and crawlers get the real headline); layout CSS inlined where needed
 for (const { entry, page, css } of [
@@ -123,7 +129,7 @@ stamp('assets/js/ink.js', ['/assets/js/ink-core.js']);
 stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css', '/assets/js/ink.js']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
 stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
-stamp('assets/js/detail.js', ['/assets/js/cta.js', '/assets/js/cta.css']);
+stamp('assets/js/detail.js', ['/assets/js/detail-fx.js', '/assets/js/detail-fx.css']);
 stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);

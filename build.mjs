@@ -119,7 +119,8 @@ const stamp = (file, refs) => {
   fs.writeFileSync(path.join('dist', file), t);
 };
 stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
-stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css']);
+stamp('assets/js/ink.js', ['/assets/js/ink-core.js']);
+stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css', '/assets/js/ink.js']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
 stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
 stamp('assets/js/detail.js', ['/assets/js/cta.js', '/assets/js/cta.css']);

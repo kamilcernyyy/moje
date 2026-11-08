@@ -44,6 +44,10 @@
   @media (min-width: 640px) { .tr-headline { font-size: 88px; } .tr-lead { font-size: 26px; } .tr-btn { width: 190px; height: 64px; } .tr-btn-label { font-size: 26px; } }
   @media (min-width: 768px) { .tr-headline { font-size: 112px; } }
   /* scroll cue from the demo */
+  /* ink behind the cursor (ink.js): a fixed layer under the content, faded in once the fluid runs */
+  .ink { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; opacity: 0; transition: opacity 1.4s ease; }
+  .ink.is-on { opacity: 1; }
+  #root { position: relative; z-index: 1; }
   .tr-hint { position: fixed; bottom: 32px; left: 50%; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 12px;
     transform: translateX(-50%); opacity: 0; transition: opacity .5s; pointer-events: none; }
   .tr-hint.is-on { opacity: 1; }
@@ -96,8 +100,10 @@
 </script>
 </head>
 <body>
+<canvas class="ink" data-ink aria-hidden="true"></canvas>
 <main id="root"><!--SSR--></main>
 <div class="tr-hint is-on" aria-hidden="true"><span class="tr-hint-label">Scroll</span><div class="tr-hint-track"><span></span></div></div>
 <script src="/assets/js/home.js" defer></script>
+<script src="/assets/js/ink.js" defer></script>
 </body>
 </html>

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import GlassSurface from '../glass/GlassSurface.jsx';
 import Hero from './Hero.jsx';
+import ElectricBorder from '../fx/ElectricBorder.jsx';
+import { ELECTRIC } from '../fx/brand.js';
 
 // Headpage, layout 9 / panel variant 1:
 // a Shader Card flame panel (bottom right; on mobile a floating card) carrying two GlassSurface buttons.
@@ -21,13 +23,33 @@ function useMobile() {
   return mobile;
 }
 
-function Btn({ w, h, label, href }) {
+function Btn({ w, h, label, href, electric }) {
   const glass = (
     <GlassSurface {...GLASS} width={w} height={h} borderRadius={h / 2}>
       <span className="hp-label">{label}</span>
     </GlassSurface>
   );
-  return href ? <a className="hp-btn" href={href}>{glass}</a> : <button className="hp-btn" type="button">{glass}</button>;
+  const btn = href ? <a className="hp-btn" href={href}>{glass}</a> : <button className="hp-btn" type="button">{glass}</button>;
+  if (!electric) return btn;
+  // booking CTA: React Bits Electric Border in the site colours, laid over the button. It powers up only when the
+  // panel climbs in (its current races in from the top with it), so its WebGL setup never weighs on the page load.
+  return (
+    <div className="hp-eb">
+      {btn}
+      <Electric radius={h / 2} />
+    </div>
+  );
+}
+
+function Electric({ radius }) {
+  const [on, setOn] = useState(() => window.__hpIn === true);
+  useEffect(() => {
+    if (on) return undefined;
+    const go = () => setOn(true);
+    window.addEventListener('hp-intro', go);
+    return () => window.removeEventListener('hp-intro', go);
+  }, [on]);
+  return on ? <ElectricBorder {...ELECTRIC} borderRadius={radius} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} /> : null;
 }
 
 function Home() {
@@ -63,7 +85,7 @@ function Home() {
         <div className="hp-flame" ref={flameRef} key="d" />
         <div className="hp-btns" style={{ padding: pad, gap }}>
           <Btn w={w} h={h} label="O mně a proč zvolit mě" href="/o-mne/" />
-          <Btn w={w} h={h} label="CHCI!" />
+          <Btn w={w} h={h} label="CHCI!" electric />
         </div>
       </div>
     );
@@ -89,7 +111,7 @@ function Home() {
       </button>
       <div className="hp-btns" style={{ padding: `${handle}px ${pad}px 0`, gap }}>
         <Btn w="100%" h={h} label="O mně a proč zvolit mě" href="/o-mne/" />
-        <Btn w="100%" h={h} label="CHCI!" />
+        <Btn w="100%" h={h} label="CHCI!" electric />
       </div>
     </div>
   );

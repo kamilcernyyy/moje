@@ -211,7 +211,7 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
     </a>
     <div class="dt-cta">
       <p>Chceš něco podobného?</p>
-      <a class="dt-cta-btn" href="/o-mne/">Chci něco podobného</a>
+      <a class="dt-cta-btn" href="/o-mne/" data-electric>Chci něco podobného</a>
       <p class="dt-cta-note">Kontaktní stránka se připravuje, zatím vede na O mně.</p>
     </div>
   </footer>

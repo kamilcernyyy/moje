@@ -69,6 +69,8 @@ react('app/prace/tunnel-core.js', 'dist/assets/js/tunnel-core.js');
 react('app/prace/device-core.js', 'dist/assets/js/device-core.js');
 // detail of a print project: the desk (Tumble Wall), loupe and brochure
 react('app/prace/detail-tisk.jsx', 'dist/assets/js/detail-tisk.js');
+// booking CTAs on the work details: Electric Border (loaded when the CTA comes near)
+react('app/fx/cta.jsx', 'dist/assets/js/cta.js');
 
 // above-the-fold markup is pre-rendered (first paint and crawlers get the real headline); layout CSS inlined where needed
 for (const { entry, page, css } of [
@@ -120,6 +122,7 @@ stamp('assets/js/main.js', ['assets/js/ribbon-core.js']);
 stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
 stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
+stamp('assets/js/detail.js', ['/assets/js/cta.js', '/assets/js/cta.css']);
 stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/ribbon.js', '/assets/js/main.js', '/assets/js/shader-card.js', '/assets/js/prace.js', '/assets/js/prace.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);

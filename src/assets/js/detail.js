@@ -99,4 +99,16 @@
     // without the flight the videos wait for a tap
     dg.querySelectorAll('video').forEach(function (v) { v.controls = true; v.preload = 'metadata'; });
   }
+
+  // booking CTA: the Electric Border (React Bits) is fetched only when the CTA comes near, so it never weighs on the first load
+  var cta = document.querySelector('[data-electric]');
+  if (cta && 'IntersectionObserver' in window) {
+    var ctaIo = new IntersectionObserver(function (es) {
+      if (!es.some(function (e) { return e.isIntersecting; })) return;
+      ctaIo.disconnect();
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/js/cta.css'; document.head.appendChild(l);
+      var s = document.createElement('script'); s.src = '/assets/js/cta.js'; s.defer = true; document.head.appendChild(s);
+    }, { rootMargin: '600px 0px' });
+    ctaIo.observe(cta);
+  }
 })();

@@ -3,10 +3,10 @@
 (function () {
   'use strict';
   var root = document.documentElement;
-  if (!root.classList.contains('intro')) return;
+  if (!root.classList.contains('intro')) { window.__hpIn = true; return; }
   var gsap = window.gsap;
   var logo = document.querySelector('.hp-logo');
-  if (!gsap || !logo) { root.classList.remove('intro'); return; }
+  if (!gsap || !logo) { root.classList.remove('intro'); window.__hpIn = true; return; }
 
   // split the wordmark into letters inside a clipping line
   var text = logo.textContent;
@@ -26,12 +26,13 @@
   (function panelIn() {
     var panel = document.querySelector('.hp-panel, .hp-sheet');
     if (!panel && tries++ < 600) { requestAnimationFrame(panelIn); return; }
-    if (!panel) return;
+    if (!panel) { window.__hpIn = true; return; }
     gsap.set(panel, { y: 64, opacity: 0 });
     var shown = false;
     var show = function () {
       if (shown) return;
       shown = true;
+      window.__hpIn = true;
       gsap.to(panel, {
         y: 0, opacity: 1, duration: 0.95, ease: 'power3.out', clearProps: 'transform,opacity',
         onStart: function () { window.dispatchEvent(new Event('hp-intro')); }

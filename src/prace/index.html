@@ -65,6 +65,8 @@
   .hp-btns { position: relative; z-index: 1; display: grid; }
   .hp-btn { display: block; padding: 0; margin: 0; border: 0; background: none; color: #fff; text-decoration: none; cursor: pointer; border-radius: 999px; font: inherit; }
   .hp-btn:focus-visible { outline: 2px solid #B19EEF; outline-offset: 3px; }
+  .hp-eb { position: relative; }
+  .hp-eb > .hp-btn { width: 100%; } /* a <button> does not stretch on its own inside the wrapper */
   .hp-label { font: 400 28px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding-top: 3px; }
 
   /* flame panel (Shader Card) behind the glass buttons */

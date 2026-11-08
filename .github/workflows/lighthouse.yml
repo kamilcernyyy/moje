@@ -1,0 +1,28 @@
+# Hlídaný výkon (záměr 15): every push builds the site and runs Lighthouse on the key pages.
+# The job fails when accessibility, best practices or SEO drop below 90; performance is reported as a warning,
+# because shared CI machines render WebGL in software and score lower than real devices.
+name: Lighthouse
+
+on:
+  push:
+    branches: [main, 'prototyp-*']
+  pull_request:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node build.mjs
+      - name: Lighthouse
+        run: npx --yes @lhci/cli@0.14.0 autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/

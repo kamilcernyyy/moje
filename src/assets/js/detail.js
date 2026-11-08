@@ -1,0 +1,91 @@
+/* Detail práce: keys and swipes between projects, the depth gallery (identity, motion), the live frame and a few details. */
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var slug = root.dataset.slug;
+  var remember = function () { try { sessionStorage.setItem('ribbon-return', slug); } catch (e) {} };
+
+  // ← Stuha returns to this very card in the ribbon
+  var back = document.querySelector('.dt-back');
+  if (back) back.addEventListener('click', remember);
+
+  // keys: Esc back to the ribbon, arrows between projects
+  document.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var a = document.querySelector('.dt-bar [data-key="' + e.key + '"]');
+    if (!a) return;
+    e.preventDefault();
+    if (a === back) remember();
+    location.href = a.href;
+  });
+
+  // mobile: a decisive sideways swipe flips to the previous / next project (záměr 9)
+  var sx = 0, sy = 0, st = 0, ok = false;
+  addEventListener('touchstart', function (e) {
+    var t = e.target;
+    ok = e.touches.length === 1 && !(t.closest && t.closest('.desk, .live, .dev, .dg'));
+    if (!ok) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
+  }, { passive: true });
+  addEventListener('touchend', function (e) {
+    if (!ok) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Date.now() - st < 600 && Math.abs(dx) > 90 && Math.abs(dy) < Math.abs(dx) * 0.4) {
+      var a = document.querySelector('.dt-bar [rel="' + (dx < 0 ? 'next' : 'prev') + '"]');
+      if (a) location.href = a.href;
+    }
+  }, { passive: true });
+
+  // the live web loads only when it comes near the screen
+  var frame = document.querySelector('.live-view iframe[data-src]');
+  if (frame && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      if (es.some(function (x) { return x.isIntersecting; })) { frame.src = frame.dataset.src; io.disconnect(); }
+    }, { rootMargin: '400px' });
+    io.observe(frame);
+  } else if (frame) frame.src = frame.dataset.src;
+
+  // "Další projekt" leans toward the pointer
+  var next = document.querySelector('.dt-next');
+  if (next && window.gsap && !reduce) {
+    next.addEventListener('pointermove', function (e) {
+      var r = next.getBoundingClientRect();
+      gsap.to(next, { rotateY: ((e.clientX - r.left) / r.width - 0.5) * 6, rotateX: -((e.clientY - r.top) / r.height - 0.5) * 6, transformPerspective: 900, duration: 0.5, ease: 'power3' });
+    });
+    next.addEventListener('pointerleave', function () { gsap.to(next, { rotateX: 0, rotateY: 0, duration: 0.7, ease: 'power3' }); });
+  }
+
+  // depth gallery (variant 9): pictures and lines stand one behind another, the scroll flies the camera through them
+  var dg = document.querySelector('.dg');
+  if (dg && window.gsap && window.ScrollTrigger && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+    dg.classList.add('is-3d');
+    var els = Array.prototype.slice.call(dg.querySelectorAll('.dg-item, .dg-line'));
+    var GAP = 1300, img = 0;
+    var nodes = els.map(function (el, k) {
+      var line = el.classList.contains('dg-line');
+      var side = line ? 0 : (img++ % 2 ? 1 : -1);          // pictures alternate left / right, lines stay in the middle
+      return { el: el, z: -k * GAP, x: side * 15, y: line ? -2 : (img % 3 - 1) * 3 };
+    });
+    var span = (els.length - 1) * GAP + 700;
+    var state = { p: 0 };
+    var render = function () {
+      var cam = state.p * span;
+      nodes.forEach(function (n) {
+        var z = n.z + cam;
+        // fades out as it passes the camera, comes out of the fog in the distance
+        var o = z > 320 ? 0 : z > 0 ? 1 - z / 320 : z < -2600 ? 0 : z < -1000 ? (z + 2600) / 1600 : 1;
+        n.el.style.opacity = o.toFixed(3);
+        n.el.style.zIndex = String(Math.round(5000 + z / 10));     // nearer draws on top
+        n.el.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+        n.el.style.transform = 'translate(-50%,-50%) translate3d(' + n.x + 'vw,' + n.y + 'vh,' + z.toFixed(1) + 'px)';
+      });
+    };
+    var to = gsap.quickTo(state, 'p', { duration: 0.6, ease: 'power3', onUpdate: render });
+    ScrollTrigger.create({ trigger: dg, start: 'top top', end: 'bottom bottom', onUpdate: function (s) { to(s.progress); } });
+    render();
+  }
+})();

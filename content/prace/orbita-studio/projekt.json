@@ -1,0 +1,36 @@
+{
+  "slug": "orbita-studio",
+  "nazev": "Orbita",
+  "typ": "identita",
+  "klient": "Orbita, studio",
+  "rok": 2025,
+  "logo": "orbita",
+  "barvy": [
+    "#140C33",
+    "#5227FF",
+    "#B19EEF"
+  ],
+  "sluzby": [
+    "Logo",
+    "Vizuální identita",
+    "Brand manuál"
+  ],
+  "role": "Koncept, design",
+  "perex": "Značka pro technologické studio: prstenec s družicí, který se dá rozpohybovat i vytisknout na vizitku.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Studio rostlo a jeho dosavadní logo nefungovalo v malých velikostech ani v animaci."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Geometrický znak z prstence a bodu, písmo s technickým charakterem a pravidla pro pohyb značky."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Značka, která drží tvar od favikony po billboard a má připravené animované varianty."
+    }
+  ],
+  "poradi": 4,
+  "ukazka": true
+}

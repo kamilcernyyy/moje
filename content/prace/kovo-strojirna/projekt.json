@@ -1,0 +1,49 @@
+{
+  "slug": "kovo-strojirna",
+  "nazev": "Kovo",
+  "typ": "web",
+  "klient": "Kovo, strojírna",
+  "rok": 2025,
+  "logo": "kovo",
+  "barvy": [
+    "#16202B",
+    "#8FA3B8",
+    "#FFB200"
+  ],
+  "sluzby": [
+    "Web na míru",
+    "Katalog výroby",
+    "Vícejazyčnost"
+  ],
+  "role": "Návrh, vývoj",
+  "perex": "Firemní web strojírny, který odpovídá na otázky nákupčích dřív, než zvednou telefon: kapacity, materiály, certifikace.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Starý web neukazoval, co firma umí vyrobit. Poptávky chodily neúplné a obchodník trávil hodiny doptáváním."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Přehled výrobních technologií s parametry, galerie hotových dílů a poptávkový formulář, který se ptá na správné věci."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Poptávky přicházejí s výkresy a parametry a web funguje i v angličtině pro zahraniční odběratele."
+    }
+  ],
+  "web": "/",
+  "poznamky": [
+    {
+      "x": 30,
+      "y": 40,
+      "text": "Technologie s parametry"
+    },
+    {
+      "x": 70,
+      "y": 78,
+      "text": "Poptávka s nahráním výkresu"
+    }
+  ],
+  "poradi": 2,
+  "ukazka": true
+}

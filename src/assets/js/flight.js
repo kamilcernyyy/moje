@@ -62,6 +62,15 @@
   state.p = trigger.progress;
   apply();
 
+  // back from a detail page (?k=…): straight to the gallery, the ribbon clears out of the fog
+  if (/[?&]k=/.test(location.search)) {
+    window.scrollTo(0, trigger.end);
+    state.p = 1; to(1); apply();
+    var fog = { a: 1 };
+    var emerge = function () { gsap.fromTo(fog, { a: 1 }, { a: 0, duration: 1.6, ease: 'power2.out', onUpdate: function () { if (window.__ribbon) window.__ribbon.setArrive(fog.a); } }); };
+    if (document.documentElement.hasAttribute('data-ribbon-ready')) emerge(); else window.addEventListener('ribbon-ready', emerge, { once: true });
+  }
+
   // "Prohlédnout práce": fly the whole way down to the gallery
   document.addEventListener('click', function (e) {
     var link = e.target.closest && e.target.closest('a[href="#galerie"]');

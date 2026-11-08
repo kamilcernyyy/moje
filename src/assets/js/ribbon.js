@@ -29,6 +29,7 @@
     ariaLabel: 'Depth ribbon gallery. Scroll or drag to travel, hold to see the whole path, click an image to bring it close.',
     inkColor: '#000000',
     focusOnClick: true,
+    openOnFocusedClick: false, // a click on the focused card fires onOpen instead of releasing it
     holdToReveal: true,
     interactive: true,
     draggable: true,
@@ -48,7 +49,7 @@
   };
 
   var KEYS = ['count', 'path', 'tour', 'interval', 'speed', 'cardSize', 'aspect', 'radius', 'offset', 'fov', 'fog', 'thread', 'shadow',
-    'accentColor', 'backgroundColor', 'inkColor', 'focusOnClick', 'holdToReveal', 'interactive', 'draggable', 'wheel', 'pauseOnHover',
+    'accentColor', 'backgroundColor', 'inkColor', 'focusOnClick', 'openOnFocusedClick', 'holdToReveal', 'interactive', 'draggable', 'wheel', 'pauseOnHover',
     'seed', 'paused', 'dpr', 'cell', 'hq'];
 
   function idle(fn) { return global.requestIdleCallback ? global.requestIdleCallback(fn, { timeout: 250 }) : setTimeout(fn, 32); }
@@ -98,7 +99,7 @@
     });
     el.appendChild(ul);
     if (o.captions) {
-      var cap = this.cap = document.createElement('div');
+      var cap = this.cap = document.createElement('div'); cap.className = 'ribbon-caption';
       cap.setAttribute('aria-live', 'polite');
       cap.style.cssText = 'position:absolute;left:0;right:0;bottom:6%;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;opacity:0;transform:translateY(8px);' +
         'transition:opacity 420ms, transform 520ms cubic-bezier(0.22,1,0.36,1);color:rgba(255,255,255,0.94);text-align:center;';
@@ -185,6 +186,8 @@
       case 'error': if (this.worker) this._fallback(m.message); else this._fail(m.message); break;
       case 'focus': this._caption(m.item >= 0 ? o.items[m.item] : null); if (o.onFocusChange) o.onFocusChange(m.item >= 0 ? o.items[m.item] : null, m.item, m.card); break;
       case 'travel': if (o.onTravel) o.onTravel(o.items[m.item], m.item, m.card); break;
+      case 'open': if (o.onOpen) o.onOpen(o.items[m.item], m.item, m.card); break;
+      case 'dived': if (o.onDived) o.onDived(); break;
       case 'mode': if (o.onModeChange) o.onModeChange(m.mode); break;
       case 'cursor': this.canvas.style.cursor = m.value; break;
       case 'ready':
@@ -277,6 +280,9 @@
   // shift the picture on screen, in NDC units (x: -1..1 left→right, y: -1..1 bottom→top)
   P.setShift = function (x, y) { this._shift = [x, y]; this._send && this._send({ type: 'shift', x: x, y: y }); };
   P.setArrive = function (a) { this._arrive = a; this._send && this._send({ type: 'arrive', a: a }); };
+  P.dive = function () { this._send && this._send({ type: 'dive' }); };
+  P.setFilter = function (mask) { this._send && this._send({ type: 'filter', m: mask }); };
+  P.undive = function () { this._send && this._send({ type: 'undive' }); };
   P.destroy = function () {
     this._dead = true;
     this._send && this._send({ type: 'destroy' });

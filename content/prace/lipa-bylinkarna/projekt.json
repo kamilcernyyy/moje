@@ -1,0 +1,36 @@
+{
+  "slug": "lipa-bylinkarna",
+  "nazev": "Lípa",
+  "typ": "identita",
+  "klient": "Bylinkárna Lípa",
+  "rok": 2026,
+  "logo": "lipa",
+  "barvy": [
+    "#1F3D2B",
+    "#C9E4B4",
+    "#F2F5EE"
+  ],
+  "sluzby": [
+    "Logo",
+    "Vizuální identita",
+    "Obaly"
+  ],
+  "role": "Koncept, design",
+  "perex": "Identita pro bylinkárnu, která spojuje tradici lékárny s lehkostí čerstvě natrhaných bylin.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Nová bylinkárna potřebovala značku, která bude působit důvěryhodně a zároveň nebude staromódní."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Lipový list jako znak, zelená paleta s papírovou bílou a systém etiket, který zvládne desítky druhů čajů."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Ucelená značka od cedule po etiketu, kterou si majitelka sama rozšiřuje o nové produkty."
+    }
+  ],
+  "poradi": 3,
+  "ukazka": true
+}

@@ -1,0 +1,49 @@
+{
+  "slug": "para-kavarna",
+  "nazev": "Pára",
+  "typ": "web",
+  "klient": "Kavárna Pára",
+  "rok": 2026,
+  "logo": "para",
+  "barvy": [
+    "#2B1D16",
+    "#E8C39E",
+    "#FF8A3D"
+  ],
+  "sluzby": [
+    "Web na míru",
+    "Fotografie",
+    "SEO"
+  ],
+  "role": "Návrh, vývoj, obsah",
+  "perex": "Web pro malou kavárnu, který voní kávou ještě před první návštěvou: menu, otevírací doba a rezervace na jeden palec.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Kavárna měla jen profil na sociálních sítích. Hosté se pořád ptali na otevírací dobu, menu a jestli se dá rezervovat stůl."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Jednostránkový web s menu, které se snadno upravuje, s rezervací přímo z telefonu a fotkami, které ukazují atmosféru místa."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Hosté najdou vše podstatné bez telefonátu a kavárna má místo, kam může posílat lidi ze sociálních sítí."
+    }
+  ],
+  "web": "/",
+  "poznamky": [
+    {
+      "x": 50,
+      "y": 12,
+      "text": "Menu a otevírací doba hned nahoře"
+    },
+    {
+      "x": 72,
+      "y": 62,
+      "text": "Rezervace jedním tlačítkem"
+    }
+  ],
+  "poradi": 1,
+  "ukazka": true
+}

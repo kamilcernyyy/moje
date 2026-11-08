@@ -47,7 +47,8 @@
   var EASE = {
     'power3.out': function (t) { return 1 - Math.pow(1 - t, 4); },
     'power3.inOut': function (t) { return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2; },
-    'power2.out': function (t) { return 1 - (1 - t) * (1 - t); }
+    'power2.out': function (t) { return 1 - (1 - t) * (1 - t); },
+    'power2.in': function (t) { return t * t * t; }
   };
 
   /* ---------- paths ---------- */
@@ -96,16 +97,19 @@
     'precision highp float;',
     'in vec2 vLocal; in vec2 vUV; in float vDist; in float vFacing; in float vState;',
     'uniform sampler2D uTex; uniform vec3 uBg; uniform vec3 uInk; uniform vec2 uFog; uniform vec2 uSize;',
-    'uniform float uRadius; uniform float uShadowPass; uniform float uShadow;',
+    'uniform float uRadius; uniform float uShadowPass; uniform float uShadow; uniform float uClip;',
     'out vec4 o;',
     'float sdRound(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }',
     'void main(){',
     '  float fog = smoothstep(uFog.x, uFog.y, vDist);',
+    // a focused card stays in clear view: whatever stands between it and the camera fades away
+    '  float clip = uClip > 0.0 ? smoothstep(uClip - 0.35 * uSize.y, uClip, vDist) : 1.0;',
+    '  if (clip < 0.01) discard;',
     '  vec2 b = uSize * 0.5 * (1.0 + vState * 0.045);',
     '  if (uShadowPass > 0.5) {',
     '    float d = sdRound(vLocal, b * 0.94, uRadius);',
     '    float a = 1.0 - smoothstep(-0.06 * uSize.y, 0.22 * uSize.y, d); a *= a;',
-    '    a *= uShadow * (0.34 + vState * 0.2) * (1.0 - fog);',
+    '    a *= uShadow * (0.34 + vState * 0.2) * (1.0 - fog) * clip;',
     '    if (a < 0.003) discard;',
     '    o = vec4(uInk, a);',
     '    return;',
@@ -116,8 +120,9 @@
     '  if (a < 0.01) discard;',
     '  vec3 col = texture(uTex, vUV).rgb;',
     '  col *= vFacing < 0.0 ? 0.78 : 1.0;',
+    '  col = mix(col, uBg, clamp(-vState, 0.0, 1.0) * 0.82);',   // filtered out: sinks into the background
     '  col = mix(col, uBg, fog);',
-    '  o = vec4(col, a);',
+    '  o = vec4(col, a * clip);',
     '}'].join('\n');
 
   var LINE_VS = '#version 300 es\nlayout(location=0) in vec3 aPos;\nuniform mat4 uVP; uniform vec3 uCam; out float vDist;\n' +
@@ -365,7 +370,8 @@
       if (d.hold) { st.holding = false; this._reveal(false); }
       else if (e.type === 'up' && !d.moved && e.t - d.t < 400 && o.focusOnClick) {
         var hit = this._pick(e.x, e.y);
-        if (st.focused >= 0 && (hit < 0 || hit === st.focused)) this.release();
+        if (st.focused >= 0 && hit === st.focused && o.openOnFocusedClick) this.emit('open', { item: this.cards[hit].item, card: hit });
+        else if (st.focused >= 0 && (hit < 0 || hit === st.focused)) this.release();
         else if (hit >= 0) this.focusCard(hit);
       } else if (d.moved && d.hist.length && !o.reduced) {
         var sum = 0, n = 0;
@@ -411,9 +417,9 @@
     if (this.o.reduced || !dur) { this.s[key] = to; delete this.tweens[key]; return; }
     this.tweens[key] = { from: this.s[key], to: to, t: 0, dur: dur, ease: EASE[ease] || EASE['power3.inOut'] };
   };
-  P._stepTweens = function (dt) {
+  P._stepTweens = function (dt, realDt) {
     for (var k in this.tweens) {
-      var tw = this.tweens[k]; tw.t += dt;
+      var tw = this.tweens[k]; tw.t += k === 'dv' ? realDt : dt;   // opening a work keeps real time, it hands over to a page load
       var p = Math.min(1, tw.t / tw.dur);
       this.s[k] = tw.from + (tw.to - tw.from) * tw.ease(p);
       if (p >= 1) delete this.tweens[k];
@@ -452,7 +458,7 @@
   };
   P.focusCard = function (i) {
     var st = this.s, c = this.cards[i];
-    if (!c) return;
+    if (!c || (this._mask && !this._mask[c.item])) return;
     clearTimeout(this._tourTimer);
     delete this.tweens.u;
     var camPos = this.cam ? this.cam.pos : add(c.c, c.n);
@@ -483,7 +489,22 @@
   P.reveal = function () { this._reveal(true); };
   P.setVisible = function (v) { this.s.visible = !!v; };
   P.setShift = function (x, y) { this.shift = [x, y]; if (this.proj) { this.proj[8] = -x; this.proj[9] = -y; } };
+  // service filter: works outside it sink into the background and can't be focused
+  P.setFilter = function (mask) {
+    this._mask = mask && mask.length ? mask : null;
+    if (this._mask && this.s.focused >= 0 && !this._mask[this.cards[this.s.focused].item]) this.release();
+  };
   P.setArrive = function (a) { this.arrive = Math.max(0, Math.min(1, +a || 0)); };
+  P.dive = function () {
+    var st = this.s;
+    if (st.focused < 0) return;
+    clearTimeout(this._tourTimer);
+    this._dived = false;
+    if (this.o.reduced) { st.dv = 1; return; }
+    st.dv = st.dv || 0;
+    this._tween('dv', 1, 0.95, 'power2.in');
+  };
+  P.undive = function () { this.s.dv = 0; this._dived = false; delete this.tweens.dv; };
   P.destroy = function () { this._dead = true; clearTimeout(this._tourTimer); clearTimeout(this._holdTimer); };
 
   // message router used by the worker bootstrap and the main-thread fallback
@@ -499,6 +520,9 @@
       case 'visible': this.setVisible(m.v); break;
       case 'shift': this.setShift(m.x, m.y); break;
       case 'arrive': this.setArrive(m.a); break;
+      case 'dive': this.dive(); break;
+      case 'filter': this.setFilter(m.m); break;
+      case 'undive': this.undive(); break;
       case 'destroy': this.destroy(); break;
     }
   };
@@ -521,7 +545,7 @@
   };
   P._focusCam = function (i) {
     var c = this.cards[i], th = Math.tan(this.fovR / 2), portrait = this.aspectR < 0.8;
-    var dh = this.cardH / ((portrait ? 0.5 : 0.66) * 2 * th), dw = this.cardW / (0.82 * 2 * th * this.aspectR);
+    var dh = this.cardH / ((portrait ? 0.5 : 0.6) * 2 * th), dw = this.cardW / (0.82 * 2 * th * this.aspectR);
     var n = mul(c.n, this.s.focusSide);
     var center = add(c.c, mul(n, 0.16 * this.cardH));
     var shift = mul(c.up, -this.cardH * 0.04);
@@ -535,7 +559,8 @@
     var dt = this._last ? Math.min(0.05, (now - this._last) / 1000) : 0.016;
     this._last = now;
 
-    this._stepTweens(dt);
+    this._stepTweens(dt, this._lastRaw ? Math.min(0.25, (now - this._lastRaw) / 1000) : dt);
+    this._lastRaw = now;
     var target = o.paused || st.focused >= 0 || st.holding || (o.pauseOnHover && st.hovered >= 0) ? 0 : o.speed;
     st.speed += (target - st.speed) * (1 - Math.exp(-dt * 3));
     st.u += (st.speed + st.vel) * dt;
@@ -554,6 +579,13 @@
       if (from) { pos = from.pos; tgt = from.target; up = from.up; }
       pos = mix(pos, fc.pos, st.f); tgt = mix(tgt, fc.target, st.f); up = norm(mix(up, fc.up, st.f));
     }
+    // dive through the focused card (opening a project): the camera passes the card plane and the fog closes
+    var dv = st.dv || 0;
+    if (dv > 0 && st.fIndex >= 0) {
+      var dc = this.cards[st.fIndex], dn = mul(dc.n, st.focusSide);
+      pos = mix(pos, add(dc.c, mul(dn, -this.cardH * 0.6)), dv);
+      tgt = mix(tgt, add(dc.c, mul(dn, -this.cardH * 3)), dv);
+    }
     // arrival from deep fog (scroll-driven on "Mé práce"): pull the camera far back along its view
     var arr = this.arrive || 0;
     if (arr > 0) pos = add(tgt, mul(sub(pos, tgt), 1 + arr * 5));
@@ -564,11 +596,20 @@
     var fogR = [rideFog[0] + (overFog[0] - rideFog[0]) * m, rideFog[1] + (overFog[1] - rideFog[1]) * m];
     fogR[0] += 2 * st.f; fogR[1] += 4 * st.f;
     if (arr > 0) { fogR[0] *= 1 - arr; fogR[1] *= 1 - arr * 0.94; }   // at arr = 1 everything sits inside the fog
+    if (dv > 0) { var k = Math.min(1, dv * 1.25); fogR[0] *= 1 - k; fogR[1] = fogR[1] * (1 - k) + 0.02; }
+    if (dv >= 1 && !this._dived) { this._dived = true; this.emit('dived', {}); }
     this._fog = fogR;
+    // clear the line of sight to the focused card
+    this._clip = 0;
+    if (st.f > 0 && st.fIndex >= 0) {
+      var fcc = this.cards[st.fIndex].c, dF = Math.sqrt(dot(sub(pos, fcc), sub(pos, fcc)));
+      this._clip = st.f * Math.max(0, dF - 0.3 * this.cardH);
+    }
 
     var S = this._inst.state, dirty = false, k = 1 - Math.exp(-dt * 10);
     for (var i = 0; i < N; i++) {
       var t = (i === st.focused ? 1 : 0) + (i === st.hovered && st.focused < 0 ? 0.8 : 0);
+      if (this._mask && !this._mask[this.cards[i].item]) t = -1;
       if (Math.abs(S[i] - t) > 0.001) { S[i] += (t - S[i]) * k; dirty = true; }
     }
     var gl = this.gl;
@@ -612,6 +653,7 @@
     gl.uniform2fv(u.uFog, fog);
     gl.uniform1f(u.uRadius, this.o.radius * 0.5 * Math.min(this.cardW, this.cardH));
     gl.uniform1f(u.uShadow, this.o.shadow);
+    gl.uniform1f(u.uClip, this._clip || 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex); gl.uniform1i(u.uTex, 0);
     gl.bindVertexArray(this.vao);
     if (this.o.shadow > 0) { gl.uniform1f(u.uShadowPass, 1); gl.depthMask(false); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.N); }

@@ -1,0 +1,36 @@
+{
+  "slug": "hora-chata",
+  "nazev": "Hora",
+  "typ": "tisk",
+  "klient": "Horská chata Hora",
+  "rok": 2025,
+  "logo": "hora",
+  "barvy": [
+    "#13261D",
+    "#E7EFE9",
+    "#FF8A3D"
+  ],
+  "sluzby": [
+    "Brožura",
+    "Mapa okolí",
+    "Plakáty"
+  ],
+  "role": "Design, sazba",
+  "perex": "Brožura a mapa pro horskou chatu: tipy na výlety, ceník a všechno, co host potřebuje vědět po příjezdu.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Hosté se na recepci ptali pořád na to samé: kam na výlet, kdy je snídaně, kde je lyžárna."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Osmistránková brožura s mapou okolí, ceníkem a pravidly chaty a sada plakátů do společných prostor."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Hosté mají odpovědi po ruce a recepce má víc času na to, co se z brožury vyčíst nedá."
+    }
+  ],
+  "poradi": 8,
+  "ukazka": true
+}

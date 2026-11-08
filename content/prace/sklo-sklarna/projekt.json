@@ -1,0 +1,35 @@
+{
+  "slug": "sklo-sklarna",
+  "nazev": "Sklo",
+  "typ": "motion",
+  "klient": "Sklárna Sklo",
+  "rok": 2025,
+  "logo": "sklo",
+  "barvy": [
+    "#0E3B43",
+    "#9EE8E1",
+    "#F4FFFD"
+  ],
+  "sluzby": [
+    "Motion grafika",
+    "Produktové animace"
+  ],
+  "role": "3D, animace",
+  "perex": "Animace sklářských výrobků, ve kterých se světlo láme přesně tak, jako na skutečném skle.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Sklárna potřebovala ukázat výrobky na e-shopu i na veletrhu, ale fotografie nezachytily, jak sklo pracuje se světlem."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Krátké produktové animace s otáčením a lomem světla, ve smyčkách pro web i obrazovky na stánku."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Výrobky se na webu i na veletrhu prezentují v pohybu a zákazník vidí, jak vypadají naživo."
+    }
+  ],
+  "poradi": 6,
+  "ukazka": true
+}

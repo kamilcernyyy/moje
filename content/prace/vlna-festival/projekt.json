@@ -1,0 +1,36 @@
+{
+  "slug": "vlna-festival",
+  "nazev": "Vlna",
+  "typ": "motion",
+  "klient": "Festival Vlna",
+  "rok": 2026,
+  "logo": "vlna",
+  "barvy": [
+    "#0B1A4A",
+    "#2B5CFF",
+    "#FF4F9A"
+  ],
+  "sluzby": [
+    "Motion grafika",
+    "Spoty na sociální sítě",
+    "Vizuál festivalu"
+  ],
+  "role": "Animace, střih",
+  "perex": "Pohybový vizuál hudebního festivalu: vlny, které pulzují do rytmu, od upoutávky po projekci na pódiu.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Festival chtěl vizuál, který bude žít na sociálních sítích, na webu i na velkoplošných obrazovkách."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Sada animovaných vln řízených tempem skladeb, krátké spoty pro sítě a smyčky pro projekci."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Jeden vizuální jazyk napříč všemi kanály, ze kterého festival skládá nové spoty sám."
+    }
+  ],
+  "poradi": 5,
+  "ukazka": true
+}

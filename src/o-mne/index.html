@@ -5,6 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>O mně a proč zvolit mě · Grafysta</title>
 <meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="Kdo je Grafysta a proč s ním spolupracovat: grafický stylista z Olomouckého kraje, který navrhuje weby na míru, vizuální identity, motion grafiku a tiskoviny.">
+<link rel="canonical" href="https://grafysta.cz/o-mne/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Grafysta">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="profile">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:site_name" content="Grafysta">
+<meta property="og:title" content="O mně a proč zvolit mě · Grafysta">
+<meta property="og:description" content="Grafický stylista z Olomouckého kraje: weby na míru, vizuální identity, motion grafika a tisk.">
+<meta property="og:url" content="https://grafysta.cz/o-mne/">
+<meta property="og:image" content="https://grafysta.cz/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": "https://grafysta.cz/o-mne/#page",
+  "url": "https://grafysta.cz/o-mne/",
+  "name": "O mně a proč zvolit mě",
+  "inLanguage": "cs",
+  "isPartOf": { "@id": "https://grafysta.cz/#web" },
+  "about": { "@id": "https://grafysta.cz/#studio" },
+  "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Grafysta", "item": "https://grafysta.cz/" },
+    { "@type": "ListItem", "position": 2, "name": "O mně", "item": "https://grafysta.cz/o-mne/" }
+  ] }
+}
+</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/o-mne/app.css">
@@ -28,7 +57,20 @@
   body { font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; }
   html.qload, html.qload body { overflow: hidden; }
   .om-badge { width: 100%; height: 100svh; }
-  .om-clients { height: 88svh; min-height: 480px; color: #fff; }
+  .om-clients { position: relative; height: 88svh; min-height: 480px; color: #fff; }
+  .om-clients-hint { position: absolute; left: 50%; top: 24px; transform: translateX(-50%); margin: 0; pointer-events: none; color: rgba(242,242,243,.66);
+    font: 400 18px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .08em; }
+  .om-ref { position: absolute; z-index: 3; left: 0; right: 0; margin-inline: auto; bottom: 32px; width: min(560px, calc(100% - 32px)); box-sizing: border-box;
+    display: grid; grid-template-columns: 72px 1fr; gap: 18px; align-items: start; padding: 22px 26px 22px 22px; border-radius: 26px;
+    background: rgba(20,20,24,.55); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 30px 70px -30px rgba(0,0,0,.9); font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; }
+  .om-ref img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,.06); }
+  .om-ref-name { margin: 2px 0 6px; font-size: 30px; line-height: 1; text-transform: uppercase; letter-spacing: .02em; }
+  .om-ref blockquote { margin: 0 0 12px; font-size: 22px; line-height: 1.15; color: rgba(242,242,243,.7); }
+  .om-ref a { color: #B19EEF; font-size: 20px; text-transform: uppercase; letter-spacing: .04em; text-decoration: none; }
+  .om-ref a:hover, .om-ref a:focus-visible { color: #fff; }
+  .om-ref-x { position: absolute; top: 10px; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.08); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+  .om-ref-x:focus-visible, .om-ref a:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
   .om-footer { height: clamp(320px, 55svh, 560px); }
   .q-loader { display: none; }
   .qload .q-loader { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 0 16px; pointer-events: none; }
@@ -36,13 +78,21 @@
     font: 400 clamp(48px, 14vw, 190px)/.9 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", Impact, sans-serif; }
   .q-line { display: block; overflow: hidden; padding-block: .04em; }
   .q-w { display: inline-block; }
+  /* the words rise in CSS right away (the first paint is the question itself); loader.js then holds and sends them up */
+  .qload .q-loader p { visibility: visible; }
+  .qload .q-w { animation: q-rise .7s cubic-bezier(.215,.61,.355,1) calc(.15s + var(--i) * .1s) both; }
+  @keyframes q-rise { from { transform: translateY(115%); } }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 </style>
 </head>
 <body>
 <div class="q-loader" aria-hidden="true">
-  <p><span class="q-line"><span class="q-w">Kdo</span> <span class="q-w">jsem</span></span><span class="q-line"><span class="q-w">a</span> <span class="q-w">proč</span> <span class="q-w">se</span> <span class="q-w">mnou?</span></span></p>
+  <p><span class="q-line"><span class="q-w" style="--i:0">Kdo</span> <span class="q-w" style="--i:1">jsem</span></span><span class="q-line"><span class="q-w" style="--i:2">a</span> <span class="q-w" style="--i:3">proč</span> <span class="q-w" style="--i:4">se</span> <span class="q-w" style="--i:5">mnou?</span></span></p>
 </div>
+<main>
+<h1 class="sr-only">O mně a proč zvolit mě</h1>
 <div id="root"></div>
+</main>
 <script src="/assets/vendor/gsap.min.js" defer></script>
 <script src="/o-mne/loader.js" defer></script>
 <script src="/o-mne/app.js" defer></script>

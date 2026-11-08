@@ -81,10 +81,36 @@
     } }
   ];
 
-  var items = ART.map(function (a, i) {
+  // the works (content/prace, injected at build time); the painted artworks only stand in when there are none
+  var WORKS = window.__PRACE || [];
+  var items = WORKS.length ? WORKS.map(function (w) {
+    return { src: w.obal, alt: w.nazev + ', ' + w.typLabel, title: w.nazev, subtitle: w.typLabel + ' · ' + w.rok, bg: w.barva, slug: w.slug, typ: w.typ };
+  }) : ART.map(function (a, i) {
     return { alt: a.title, title: a.title, subtitle: a.subtitle, draw: a.draw,
       bg: ['#4A12B0', '#2B0A6E', '#E0207F', '#E0207F', '#2B0A6E', '#4A12B0', '#B3123F', '#4A12B0'][i] };
   });
+
+  // opening a work: the camera dives through its card into fog, the detail page clears out of the same fog (variant 2)
+  var focused = null, opening = false;
+  function open(item) {
+    if (!item || !item.slug || opening) return;
+    opening = true;
+    var href = '/prace/' + item.slug + '/';
+    try { sessionStorage.setItem('dive', item.slug); } catch (e) {}
+    var r = window.__ribbon;
+    if (!r || matchMedia('(prefers-reduced-motion: reduce)').matches) { location.href = href; return; }
+    document.documentElement.classList.add('diving');
+    r.dive();
+    var go = function () { location.href = href; };
+    window.__onDived = go;
+    setTimeout(go, 1500);   // in case the renderer never reports back
+  }
+  var openBtn = document.querySelector('.pr-open');
+  if (openBtn) openBtn.addEventListener('click', function () { open(focused); });
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && focused && !/^(A|BUTTON|INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) open(focused);
+  });
+  addEventListener('pageshow', function (e) { if (e.persisted) { opening = false; document.documentElement.classList.remove('diving'); if (window.__ribbon && window.__ribbon.undive) window.__ribbon.undive(); } });
 
   var stage = document.getElementById('depth-ribbon');
   var posterMode = /[?&]poster\b/.test(location.search);   // used once at build time to render the first frame
@@ -115,11 +141,22 @@
       wheel: false,
       workerUrl: '/assets/js/ribbon-core.js',
       coreUrl: '/assets/js/ribbon-core.js',
+      openOnFocusedClick: !!WORKS.length,
       onReady: function () {
         document.documentElement.setAttribute('data-ribbon-ready', '');
         window.dispatchEvent(new Event('ribbon-ready'));
+        // back from a detail page: the ribbon comes back focused on that very card
+        var k = (location.search.match(/[?&]k=([a-z0-9-]+)/) || [])[1];
+        var i = k ? items.findIndex(function (it) { return it.slug === k; }) : -1;
+        if (i >= 0) setTimeout(function () { window.__ribbon.focusItem(i); }, 900);
       },
-      onFocusChange: function (item) { document.documentElement.classList.toggle('ribbon-focus', !!item); }
+      onFocusChange: function (item) {
+        focused = item;
+        document.documentElement.classList.toggle('ribbon-focus', !!item);
+        if (openBtn) openBtn.querySelector('span').textContent = item ? item.title : '';
+      },
+      onOpen: function (item) { open(item); },
+      onDived: function () { if (window.__onDived) window.__onDived(); }
     });
     if (!posterMode) frame();
   }
@@ -131,6 +168,44 @@
     else r.setShift(-0.24, 0.14);
   }
   addEventListener('resize', frame);
+
+  // view switch: the ribbon or the index of works (variant 17); the index is plain links with a preview that follows the pointer
+  var viewBtns = document.querySelectorAll('.pr-view [data-view]');
+  var index = document.getElementById('rejstrik');
+  var preview = document.querySelector('.ix-preview');
+  function setView(v) {
+    viewBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === v)); });
+    if (index) index.hidden = v !== 'rejstrik';
+    document.documentElement.classList.toggle('index-open', v === 'rejstrik');
+    if (window.__ribbon && window.__ribbon.release && v === 'rejstrik') window.__ribbon.release();
+  }
+  viewBtns.forEach(function (b) { b.addEventListener('click', function () { setView(b.getAttribute('data-view')); }); });
+  if (/#rejstrik$/.test(location.hash)) setView('rejstrik');
+
+  // service filter (variant 19): works outside it sink into the fog of the ribbon and leave the index
+  var filterBtns = document.querySelectorAll('.pr-filter [data-typ]');
+  function setFilter(t) {
+    filterBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-typ') === t)); });
+    document.querySelectorAll('.ix-list li[data-typ]').forEach(function (li) { li.hidden = !!t && li.getAttribute('data-typ') !== t; });
+    if (window.__ribbon && window.__ribbon.setFilter) window.__ribbon.setFilter(t ? items.map(function (it) { return it.typ === t; }) : null);
+  }
+  filterBtns.forEach(function (b) { b.addEventListener('click', function () { setFilter(b.getAttribute('data-typ')); }); });
+  if (index && preview) {
+    var px = 0, py = 0, qx = 0, qy = 0, praf = 0;
+    var move = function () {
+      qx += (px - qx) * 0.2; qy += (py - qy) * 0.2;
+      preview.style.transform = 'translate3d(' + (qx + 24).toFixed(1) + 'px,' + (qy - 140).toFixed(1) + 'px,0) rotate(' + ((px - qx) * 0.04).toFixed(2) + 'deg)';
+      praf = Math.abs(px - qx) + Math.abs(py - qy) > 0.5 ? requestAnimationFrame(move) : 0;
+    };
+    index.addEventListener('pointermove', function (e) { px = e.clientX; py = e.clientY; if (!praf) praf = requestAnimationFrame(move); });
+    index.addEventListener('pointerover', function (e) {
+      var a = e.target.closest && e.target.closest('.ix-item');
+      if (!a) return;
+      if (preview.getAttribute('src') !== a.dataset.img) preview.src = a.dataset.img;
+      preview.classList.add('is-on');
+    });
+    index.addEventListener('pointerout', function (e) { if (!(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.ix-item'))) preview.classList.remove('is-on'); });
+  }
 
   // start WebGL after the page has loaded so it never competes with first paint
   var later = function () { if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 600 }); else setTimeout(boot, 100); };

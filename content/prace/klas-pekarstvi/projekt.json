@@ -1,0 +1,36 @@
+{
+  "slug": "klas-pekarstvi",
+  "nazev": "Klas",
+  "typ": "tisk",
+  "klient": "Pekařství Klas",
+  "rok": 2026,
+  "logo": "klas",
+  "barvy": [
+    "#6B3E1E",
+    "#F2D38A",
+    "#FFF7E6"
+  ],
+  "sluzby": [
+    "Tiskoviny",
+    "Obaly",
+    "Menu"
+  ],
+  "role": "Design, příprava do tisku",
+  "perex": "Tiskoviny pro rodinné pekařství: menu, sáčky, vizitky a plakát, všechno s vůní kvásku.",
+  "kapitoly": [
+    {
+      "nadpis": "Zadání",
+      "text": "Pekařství otevíralo druhou prodejnu a potřebovalo sjednotit všechno, co zákazník drží v ruce."
+    },
+    {
+      "nadpis": "Řešení",
+      "text": "Teplá paleta, ručně kreslené klasy a jednoduchá sazba, která je čitelná i u pultu."
+    },
+    {
+      "nadpis": "Výsledek",
+      "text": "Sada tiskovin připravená do tiskárny včetně spadávek, kterou pekařství dotiskuje podle potřeby."
+    }
+  ],
+  "poradi": 7,
+  "ukazka": true
+}

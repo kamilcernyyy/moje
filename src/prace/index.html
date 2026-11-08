@@ -144,6 +144,58 @@
   @keyframes pr-reveal { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
   @media (prefers-reduced-motion: reduce) { [data-reveal] { animation: none; } }
 
+
+  /* opening a work from the ribbon */
+  .pr-open { position: absolute; z-index: 4; left: 50%; bottom: calc(6% + 72px); transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+    display: flex; gap: 10px; align-items: baseline; padding: 14px 24px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); cursor: pointer;
+    background: #5227FF; color: #fff; font: 400 22px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .04em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 18px 40px -14px rgba(82,39,255,.9); transition: opacity .35s, transform .35s; }
+  .pr-open span { color: rgba(255,255,255,.75); }
+  .pr-open span:empty { display: none; }
+  .ribbon-focus .pr-open { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .diving #hp-root, .diving .pr-open, .diving .pr-view, .diving .hp-logo, .diving .gm, .diving .ribbon-caption { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
+  /* view switch: ribbon / index */
+  .pr-view { position: absolute; z-index: 5; left: 50%; top: max(22px, env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; gap: 2px; padding: 5px; border-radius: 999px;
+    background: rgba(20,20,24,.5); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+  .pr-view button { font: 400 19px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .03em; color: rgba(242,242,243,.75);
+    background: none; border: 0; padding: 10px 16px 8px; border-radius: 999px; cursor: pointer; }
+  .pr-view button[aria-pressed="true"] { background: rgba(255,255,255,.14); color: #fff; }
+  .pr-view button:focus-visible, .ix-item:focus-visible, .pr-open:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
+  .pr-index { position: absolute; z-index: 3; inset: 0; overflow-y: auto; background: rgba(10,10,10,.94); padding: 140px max(24px, env(safe-area-inset-left, 0px)) 140px;
+    font-family: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; }
+  .ix-list { list-style: none; margin: 0 auto; padding: 0; max-width: 1200px; }
+  .ix-item { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto; align-items: baseline; gap: 16px; padding: 10px 0 6px; border-bottom: 1px solid rgba(255,255,255,.1);
+    color: rgba(242,242,243,.42); text-decoration: none; transition: color .25s, padding .35s; }
+  .ix-n { font-size: 20px; color: #B19EEF; font-variant-numeric: tabular-nums; }
+  .ix-name { font-size: clamp(54px, 9vw, 128px); line-height: .9; }
+  .ix-meta { font-size: 20px; letter-spacing: .06em; text-align: right; }
+  .ix-thumb { display: none; }
+  .ix-item:hover, .ix-item:focus-visible { color: #fff; padding-left: 16px; }
+  .ix-preview { position: fixed; z-index: 6; left: 0; top: 0; width: 280px; height: 280px; object-fit: cover; border-radius: 22px; pointer-events: none; opacity: 0;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.8); transition: opacity .25s; }
+  .ix-preview.is-on { opacity: 1; }
+  @media (max-width: 760px) {
+    .pr-view { top: 74px; }
+    .pr-open { bottom: 104px; font-size: 19px; }
+    .pr-index { padding-top: 130px; }
+    .ix-item { grid-template-columns: 2.2em minmax(0, 1fr) 64px; align-items: center; }
+    .ix-meta { display: none; }
+    .ix-thumb { display: block; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
+    .ix-preview { display: none; }
+  }
+
+  /* service filter (variant 19) */
+  .pr-filter { position: absolute; z-index: 5; left: 50%; top: calc(max(22px, env(safe-area-inset-top, 0px)) + 62px); transform: translateX(-50%); display: flex; gap: 4px; flex-wrap: nowrap; max-width: calc(100vw - 32px); overflow-x: auto; scrollbar-width: none; }
+  .pr-filter::-webkit-scrollbar { display: none; }
+  .pr-filter button { flex: none; font: 400 17px/1 "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .04em; color: rgba(242,242,243,.6);
+    background: rgba(20,20,24,.35); border: 1px solid rgba(255,255,255,.12); padding: 9px 14px 7px; border-radius: 999px; cursor: pointer; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: color .25s, background .25s, border-color .25s; }
+  .pr-filter button:hover { color: #fff; }
+  .pr-filter button[aria-pressed="true"] { color: #fff; background: rgba(82,39,255,.55); border-color: rgba(177,158,239,.6); }
+  .pr-filter button:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
+  .ix-list li[hidden] { display: none; }
+  .diving .pr-filter { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
+  @media (max-width: 760px) { .pr-filter { top: 126px; justify-content: flex-start; } .pr-index { padding-top: 180px; } }
+
   /* poster (first frame) follows the same lens shift as the live ribbon */
   [data-ribbon-poster] { transform: translate(-12vw, -7vh); }
   @media (max-width: 760px) { [data-ribbon-poster] { transform: translate(0, -13vh); } }
@@ -180,6 +232,16 @@
 <section class="pr-gallery" id="galerie" aria-label="Galerie prací">
 <div id="depth-ribbon"><img data-ribbon-poster src="/assets/ribbon-poster.webp" srcset="/assets/ribbon-poster-600.webp 600w, /assets/ribbon-poster-900.webp 900w, /assets/ribbon-poster.webp 1200w" sizes="100vmin" alt="" width="1200" height="1200" loading="lazy"></div>
 <div id="hp-root"></div>
+<button class="pr-open" type="button"><b>Otevřít projekt</b> <span></span></button>
+<div class="pr-view glass-pill" role="group" aria-label="Zobrazení prací">
+  <button type="button" data-view="stuha" aria-pressed="true">Stuha</button><button type="button" data-view="rejstrik" aria-pressed="false">Rejstřík</button>
+</div>
+<!--FILTR-->
+<div class="pr-index" id="rejstrik" hidden>
+  <h2 class="sr-only">Rejstřík prací</h2>
+  <!--REJSTRIK-->
+</div>
+<img class="ix-preview" alt="" aria-hidden="true">
 </section>
 </div>
 </main>
@@ -188,6 +250,7 @@
 <script src="/assets/js/intro.js" defer></script>
 <script src="/assets/js/flight.js" defer></script>
 <script src="/assets/js/ribbon.js" defer></script>
+<!--PRACE-->
 <script src="/assets/js/main.js" defer></script>
 <script src="/assets/js/shader-card.js" defer></script>
 <script src="/assets/js/prace.js" defer></script>

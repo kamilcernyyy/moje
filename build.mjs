@@ -29,12 +29,12 @@ for (const f of ['assets/js/ribbon.js', 'assets/js/ribbon-core.js', 'assets/js/m
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('</urlset>', (urls ? urls + '\n' : '') + '</urlset>'));
 }
 // global menu (glass pill), page transitions and the shared site script on every page
-const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', ...works.map(w => `prace/${w.slug}/index.html`)];
+const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', ...works.map(w => `prace/${w.slug}/index.html`)];
 {
   const menuCss = fs.readFileSync('src/assets/css/menu.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s*\n\s*/g, ' ').trim();
   for (const f of htmlPages) {
     const p = path.join('dist', f);
-    const here = f === 'index.html' ? '/' : f.startsWith('o-mne') ? '/o-mne/' : '/prace/';
+    const here = f === 'index.html' ? '/' : f === '404.html' ? '' : f.startsWith('o-mne') ? '/o-mne/' : '/prace/';
     const link = (href, label) => `<a href="${href}"${href === here ? ' aria-current="page"' : ''}>${label}</a>`;
     const menu = `<style>${menuCss}</style><nav class="gm" aria-label="Hlavní menu">${link('/', 'Úvod')}${link('/prace/', 'Mé práce')}${link('/o-mne/', 'O mně')}</nav>`;
     let t = fs.readFileSync(p, 'utf8');

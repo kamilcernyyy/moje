@@ -194,6 +194,9 @@
   .pr-filter button[aria-pressed="true"] { color: #fff; background: rgba(82,39,255,.55); border-color: rgba(177,158,239,.6); }
   .pr-filter button:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
   .ix-list li[hidden] { display: none; }
+  /* the filter belongs to the index; the ribbon stays whole */
+  html:not(.index-open) .pr-filter { display: none; }
+  .no-gl .pr-view [data-view="stuha"] { display: none; }
   .diving .pr-filter { opacity: 0 !important; transition: opacity .4s; pointer-events: none; }
   @media (max-width: 760px) { .pr-filter { top: 126px; } .pr-filter button { font-size: 15px; padding: 8px 10px 6px; } .pr-index { padding-top: 180px; } }
 

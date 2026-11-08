@@ -69,11 +69,11 @@
     // on a phone they stack in the middle instead and the lines float a bit higher
     var nodes = els.map(function (el, k) {
       var line = el.classList.contains('dg-line'), side = k % 2 ? 1 : -1;
-      return { el: el, z: -k * GAP, x: narrow ? 0 : side * 24, y: narrow ? (line ? -16 : 6) : (line ? 0 : (k % 3 - 1) * 3) };
+      return { el: el, z: -k * GAP, x: narrow ? 0 : side * 24, y: narrow ? (line ? -16 : 6) : (line ? 0 : (k % 3 - 1) * 3), v: el.querySelector('video'), on: false };
     });
     // the flight ends with the last station in full view, then the page scrolls on
     var span = (els.length - 1) * GAP;
-    dg.style.height = (100 + (els.length - 1) * 62) + 'vh';
+    dg.style.height = (100 + (els.length - 1) * 38) + 'vh';
     var state = { p: 0 };
     var render = function () {
       var cam = state.p * span;
@@ -85,10 +85,18 @@
         n.el.style.zIndex = String(Math.round(5000 + z / 10));     // nearer draws on top
         n.el.style.visibility = o < 0.01 ? 'hidden' : 'visible';
         n.el.style.transform = 'translate(-50%,-50%) translate3d(' + n.x + 'vw,' + n.y + 'vh,' + z.toFixed(1) + 'px)';
+        // a motion piece plays only while it is in sight
+        if (n.v && (o > 0.15) !== n.on) {
+          n.on = o > 0.15;
+          if (n.on) { n.v.preload = 'auto'; var pl = n.v.play(); if (pl && pl.catch) pl.catch(function () {}); } else n.v.pause();
+        }
       });
     };
     var to = gsap.quickTo(state, 'p', { duration: 0.6, ease: 'power3', onUpdate: render });
     ScrollTrigger.create({ trigger: dg, start: 'top top', end: 'bottom bottom', onUpdate: function (s) { to(s.progress); } });
     render();
+  } else if (dg) {
+    // without the flight the videos wait for a tap
+    dg.querySelectorAll('video').forEach(function (v) { v.controls = true; v.preload = 'metadata'; });
   }
 })();

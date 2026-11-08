@@ -123,13 +123,13 @@ h1 { margin: 0; font-weight: 400; font-size: clamp(88px, 15vw, 220px); line-heig
 .dg { position: relative; }
 .dg-stage { display: grid; gap: 24px; padding-inline: var(--gutter); }
 .dg-item { margin: 0; }
-.dg-item img { border-radius: 20px; width: 100%; }
+.dg-item img, .dg-item video { display: block; border-radius: 20px; width: 100%; height: auto; background: #141417; }
 .dg-line { margin: 0; font-size: clamp(30px, 3.4vw, 54px); line-height: 1; text-transform: uppercase; max-width: 22ch; padding: 24px 0; }
 .dg.is-3d { height: 520vh; }  /* set from the number of stations in detail.js */
 .dg.is-3d .dg-stage { position: sticky; top: 0; height: 100vh; height: 100svh; display: block; padding: 0; perspective: 900px; overflow: hidden; }
 .dg.is-3d .dg-item, .dg.is-3d .dg-line { position: absolute; left: 50%; top: 50%; will-change: transform, opacity; }
 .dg.is-3d .dg-item { width: min(42vw, 720px); }
-.dg.is-3d .dg-item img { box-shadow: 0 40px 90px -30px rgba(0,0,0,.9); }
+.dg.is-3d .dg-item img, .dg.is-3d .dg-item video { box-shadow: 0 40px 90px -30px rgba(0,0,0,.9); }
 .dg.is-3d .dg-line { width: min(38vw, 600px); padding: 26px 30px 22px; border-radius: 24px; background: rgba(14,14,18,.6); border: 1px solid var(--glass-line);
   background: rgba(16,16,20,.86); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 30px 60px -30px rgba(0,0,0,.9); }
 

@@ -1,5 +1,5 @@
 /* Detail of a web project: the 3D phone (device-core.js, in a worker) shows the real mobile screens.
-   The buttons pick a screen (the phone spins once and swaps it), the scroll turns the phone and walks through the screens. */
+   The buttons pick a screen (the phone spins once and swaps it), the scroll turns the phone slightly. */
 (function () {
   'use strict';
   var dev = document.querySelector('.dev');
@@ -10,13 +10,13 @@
   var screens = [];
   try { screens = JSON.parse(dev.dataset.screens || '[]'); } catch (e) {}
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var current = 0, manual = false, post = null;
+  var current = 0, post = null;
   var abs = function (u) { return new URL(u, location.href).href; };
 
   function mark(i) { btns.forEach(function (b, k) { b.setAttribute('aria-current', String(k === i)); }); }
   function show(i) { if (i === current) return; current = i; mark(i); if (post) post({ type: 'show', i: i }); }
   mark(0);
-  btns.forEach(function (b, k) { b.addEventListener('click', function () { manual = true; show(k); }); });
+  btns.forEach(function (b, k) { b.addEventListener('click', function () { show(k); }); });
 
   function size() { var r = stage.getBoundingClientRect(); return { width: r.width, height: r.height, dpr: window.devicePixelRatio || 1 }; }
   function start() {
@@ -40,7 +40,8 @@
       s.src = CORE;
       s.onload = function () {
         if (!window.DeviceCore) return;
-        var d = window.DeviceCore(canvas, Object.assign({ onReady: ready }, init));
+        var d;
+        try { d = window.DeviceCore(canvas, Object.assign({ onReady: ready }, init)); } catch (e) { canvas.remove(); return; }   // no WebGL: the still phone picture stays
         post = function (m) {
           if (m.type === 'resize') d.resize(m.width, m.height, m.dpr);
           else if (m.type === 'pointer') d.pointer(m.x, m.y);
@@ -70,7 +71,7 @@
   });
   dev.addEventListener('pointerleave', function () { if (post) post({ type: 'pointer', x: 0, y: 0 }); });
 
-  // scroll turns the phone and, until a button is used, walks through the screens
+  // scroll turns the phone a little; the screens change only with the buttons, so the phone doesn't keep spinning while you read
   var ticking = false;
   addEventListener('scroll', function () {
     if (ticking) return;
@@ -80,7 +81,6 @@
       var r = dev.getBoundingClientRect(), vh = innerHeight;
       var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
       if (post && !reduce) post({ type: 'scroll', v: (p - 0.5) * 0.5 });
-      if (!manual && screens.length > 1) show(Math.min(screens.length - 1, Math.max(0, Math.floor((p - 0.25) / 0.5 * screens.length))));
     });
   }, { passive: true });
 })();

@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { useEffect, useRef, useState } from 'react';
+import { Component, useEffect, useRef, useState } from 'react';
 import Lanyard from './Lanyard.jsx';
 import WaveLettering from './WaveLettering.jsx';
 import TumbleWall from './TumbleWall.js';
@@ -71,11 +71,20 @@ function Clients() {
   );
 }
 
+// without WebGL the badge can't hang on its lanyard: the card itself is shown, still
+const CARD = <img className="om-badge-still" src="/o-mne/card-front.webp" alt="Grafysta, grafický designér a webdeveloper" width="1024" height="1440" />;
+const hasGL = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+class Badge extends Component {
+  constructor(p) { super(p); this.state = { failed: !hasGL }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? CARD : <Lanyard frontImage="/o-mne/card-front.webp" />; }
+}
+
 const root = createRoot(document.getElementById('root'));
 const show = () => root.render(
   <>
     <div className="om-badge">
-      <Lanyard frontImage="/o-mne/card-front.webp" />
+      <Badge />
     </div>
     {/* clients: their logos rain in as glass pieces and can be thrown around */}
     <Clients />

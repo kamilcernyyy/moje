@@ -43,6 +43,9 @@ export function loadWorks(dir = 'content/prace') {
         desktop: pick(/^desktop\./)[0] || null,
         mobil: pick(/^mobil-/),
         galerie: pick(/^galerie-/),
+        // a video next to a picture of the same name (galerie-2.mp4 by galerie-2.webp) plays in its place; the picture is its poster
+        video: Object.fromEntries(pick(/^galerie-/).map(g => [g, g.replace(/\.[a-z0-9]+$/i, '.mp4')]).filter(([, v]) => fs.existsSync(path.join(dir, slug, path.basename(v))))),
+        og: files.includes('og.jpg') ? `/prace/${slug}/og.jpg` : null,
         kusy: pick(/^kus-/),
         strany: pick(/^strana-/),
         dir: path.join(dir, slug),
@@ -101,7 +104,9 @@ function depth(w) {
   const lines = (w.kapitoly || []).map(k => k.text.split('. ')[0].replace(/\.$/, '') + '.');
   return `<section class="dt-module dt-depth" aria-label="Hloubková galerie">
       <div class="dg-head"><h2 class="dt-mod-h">Průlet prací</h2><p class="dt-mod-p">Scrolluj a proleť projektem od zadání po výsledek.</p></div>
-      <div class="dg"><div class="dg-stage">${w.galerie.map((g, i) => `<figure class="dg-item" data-i="${i}"><img src="${esc(g)}" alt="${esc(w.nazev)}, ukázka ${i + 1}" loading="lazy" width="${w.size[g][0]}" height="${w.size[g][1]}"></figure>` +
+      <div class="dg"><div class="dg-stage">${w.galerie.map((g, i) => `<figure class="dg-item" data-i="${i}">${w.video[g]
+        ? `<video src="${esc(w.video[g])}" poster="${esc(g)}" muted loop playsinline preload="none" width="${w.size[g][0]}" height="${w.size[g][1]}" aria-label="${esc(w.nazev)}, video ${i + 1}"></video>`
+        : `<img src="${esc(g)}" alt="${esc(w.nazev)}, ukázka ${i + 1}" loading="lazy" width="${w.size[g][0]}" height="${w.size[g][1]}">`}</figure>` +
         (lines[i] ? `<p class="dg-line" data-i="${i}">${esc(lines[i])}</p>` : '')).join('')}</div></div>
     </section>`;
 }
@@ -124,7 +129,7 @@ export function detailHtml(w, i, works, site) {
     ]
   };
   // the closing gallery shows what the module above doesn't: the depth gallery already flies through "galerie-*"
-  const gallery = (w.typ === 'web' ? [w.desktop, ...w.mobil, ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
+  const gallery = (w.typ === 'web' ? [...(w.web ? [] : [w.desktop]), ...w.galerie] : w.typ === 'tisk' ? [...w.galerie, ...(w.galerie.length ? [] : w.kusy)] : []).filter(Boolean);
   const rows = [];
   for (const g of gallery) {                      // rows of similar height: close a row once its aspect ratios add up to ~2.6
     const r = (w.size[g] || [16, 10]).reduce((a, b) => a / b);
@@ -149,7 +154,7 @@ ${w.ukazka ? '<meta name="robots" content="noindex, follow">\n' : ''}<link rel="
 <meta property="og:title" content="${esc(w.nazev)} · ${esc(w.typLabel)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="${site}${w.obal}">
+<meta property="og:image" content="${site}${w.og || w.obal}">${w.og ? '\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">' : ''}
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -219,7 +224,7 @@ export function buildWorks(site, out = 'dist') {
   works.forEach((w, i) => {
     const dir = path.join(out, 'prace', w.slug);
     fs.mkdirSync(dir, { recursive: true });
-    for (const f of fs.readdirSync(w.dir)) if (/\.(webp|jpe?g|png|avif)$/i.test(f)) fs.copyFileSync(path.join(w.dir, f), path.join(dir, f));
+    for (const f of fs.readdirSync(w.dir)) if (/\.(webp|jpe?g|png|avif|mp4)$/i.test(f)) fs.copyFileSync(path.join(w.dir, f), path.join(dir, f));
     // an optional static site of the work (web/), shown in the live frame
     if (fs.existsSync(path.join(w.dir, 'web'))) fs.cpSync(path.join(w.dir, 'web'), path.join(dir, 'web'), { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), detailHtml(w, i, works, site));

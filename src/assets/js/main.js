@@ -114,9 +114,12 @@
 
   var stage = document.getElementById('depth-ribbon');
   var posterMode = /[?&]poster\b/.test(location.search);   // used once at build time to render the first frame
+  // without WebGL there is no ribbon: the works are shown as the index instead
+  function noRibbon() { document.documentElement.classList.add('no-gl'); setView('rejstrik'); }
   function boot() {
-    if (!window.DepthRibbon || !DepthRibbon.supported()) return;
+    if (!window.DepthRibbon || !DepthRibbon.supported()) { noRibbon(); return; }
     window.__ribbon = new DepthRibbon(stage, {
+      onError: noRibbon,
       items: items,
       count: 72,
       path: 'loop',
@@ -186,12 +189,11 @@
   viewBtns.forEach(function (b) { b.addEventListener('click', function () { setView(b.getAttribute('data-view')); }); });
   if (/#rejstrik$/.test(location.hash)) setView('rejstrik');
 
-  // service filter (variant 19): works outside it sink into the fog of the ribbon and leave the index
+  // service filter (variant 19): narrows the index to one kind of work
   var filterBtns = document.querySelectorAll('.pr-filter [data-typ]');
   function setFilter(t) {
     filterBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-typ') === t)); });
     document.querySelectorAll('.ix-list li[data-typ]').forEach(function (li) { li.hidden = !!t && li.getAttribute('data-typ') !== t; });
-    if (window.__ribbon && window.__ribbon.setFilter) window.__ribbon.setFilter(t ? items.map(function (it) { return it.typ === t; }) : null);
   }
   filterBtns.forEach(function (b) { b.addEventListener('click', function () { setFilter(b.getAttribute('data-typ')); }); });
   if (index && preview) {

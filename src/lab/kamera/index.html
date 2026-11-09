@@ -48,6 +48,7 @@
   .lab-panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--violet); }
   .lab-panel output { color: var(--lilac); }
   .lab-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .lab-panel button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); }
   .lab-panel button, .lab-toggle { font: inherit; color: var(--fg); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px 6px; cursor: pointer; }
   .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; background: rgba(14,14,18,.76); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 10px 14px 8px; }
   .panel-closed .lab-toggle { display: block; }
@@ -95,6 +96,7 @@
 
 <aside class="lab-panel" aria-label="Nastavení kamery">
   <h2>Kamera při scrollu</h2>
+  <div class="lab-row" style="margin:0 0 12px"><button type="button" data-strom="fotka">Kmen z fotky</button><button type="button" data-strom="kresba">Strom z kresby</button></div>
   <label>Natočení sekcí (°) <output></output><input type="range" min="0" max="50" step="1" data-set="angle"></label>
   <label>Náklon (°) <output></output><input type="range" min="0" max="20" step="1" data-set="tilt"></label>
   <label>Jak dlouho je sekce rovně <output></output><input type="range" min="0" max=".9" step=".05" data-set="flat"></label>

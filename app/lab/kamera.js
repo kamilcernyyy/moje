@@ -38,7 +38,8 @@ const POINT_FRAG = `precision highp float; varying vec3 vC; varying float vD;
 // the tree from the reference, made 3D: every sampled pixel is spun around the trunk. Most points sit on a few
 // planes through the trunk (so branches and roots keep their drawing from every side), the rest fill the volume.
 const TREE = { orig: 1 };
-let treeProg = null;
+let treeProg = null, treeMesh = null, trunkMesh = null, trunkProg = null;
+const SCENE = { name: new URLSearchParams(location.search).get('strom') === 'kresba' ? 'kresba' : 'fotka' };
 async function tree() {
   const img = new Image(); img.src = '/lab/kamera/strom.webp'; await img.decode();
   const iw = 368, ih = 552, cv = document.createElement('canvas'); cv.width = iw; cv.height = ih;
@@ -83,7 +84,86 @@ async function tree() {
   });
   program.setBlendFunc(gl.ONE, gl.ONE);
   treeProg = program;
-  new Mesh(gl, { geometry: new Geometry(gl, { position: { size: 3, data: pos }, aC: { size: 3, data: col }, aR: { size: 1, data: rnd } }), program, mode: gl.POINTS, frustumCulled: false }).setParent(scene);
+  treeMesh = new Mesh(gl, { geometry: new Geometry(gl, { position: { size: 3, data: pos }, aC: { size: 3, data: col }, aR: { size: 1, data: rnd } }), program, mode: gl.POINTS, frustumCulled: false });
+  treeMesh.visible = SCENE.name === 'kresba';
+  treeMesh.setParent(scene);
+  return program;
+}
+
+
+// the trunk from the photo (a worm's-eye view up a mossy trunk): the photo is read back into 3D. The trunk is a cone
+// standing on the ground: every trunk pixel goes onto its bark (height from how far up the photo it is, around the
+// trunk from how far from its middle; the back of the trunk repeats the front). The canopy around it becomes a dome
+// of leaves overhead (direction from the point the trunk vanishes into), repeated around so it closes all round.
+async function trunk() {
+  const img = new Image(); img.src = '/lab/kamera/kmen.webp'; await img.decode();
+  const iw = 392, ih = 800, cv = document.createElement('canvas'); cv.width = iw; cv.height = ih;
+  const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, iw, ih);
+  const d = x.getImageData(0, 0, iw, ih).data;
+  // photo geometry (in 784×1600 px): the trunk vanishes at (400, 370), widens to the bottom
+  const CX = 400 / 784, TOP = 370 / 1600, BOT = 1560 / 1600;
+  const half = yn => (10 + (yn * 1600 - 370) * 0.36) / 784; // trunk half width (in image widths) at height yn
+  const N = narrow ? 80000 : 160000, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), rnd = new Float32Array(N);
+  let k = 0, guard = 0;
+  while (k < N && guard++ < N * 40) {
+    const px = Math.random() * iw, py = Math.random() * ih, i = ((py | 0) * iw + (px | 0)) * 4;
+    const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255, lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const xn = px / iw, yn = py / ih;
+    if ((b > r + 0.08 && b > g - 0.02 && lum > 0.45) || lum < 0.03) continue; // sky and pure black out
+    let X, Y, Z;
+    const hw = half(yn);
+    if (yn > TOP && Math.abs(xn - CX) < hw) {
+      // bark: a cone 16 high, 1.7 wide at the foot; all of the moss counts, dark or light
+      if (Math.random() > 0.55) continue;
+      const tt = Math.min(1, Math.max(0, (BOT - yn) / (BOT - TOP)));
+      const H = 16 * Math.pow(tt, 1.7), R = 0.12 + 1.6 * (1 - 0.92 * tt);
+      const u = Math.max(-1, Math.min(1, (xn - CX) / hw));
+      const phi = Math.asin(u) + (Math.random() < 0.5 ? 0 : Math.PI);
+      const rr = R * (1 + (Math.random() - 0.5) * 0.08);
+      X = Math.sin(phi) * rr; Y = H - 0.5; Z = Math.cos(phi) * rr;
+    } else {
+      if (Math.random() > Math.pow(lum, 0.6) * 1.2) continue;
+      // looking up from the foot: a pixel's angle from the zenith (distance from the vanishing point) says where it is
+      const dx = (xn - CX) * 784, dy = (yn - TOP) * 1600, rad = Math.hypot(dx, dy);
+      const al = Math.atan2(dx, -dy) + ((Math.random() * 3) | 0) * (Math.PI * 2 / 3);
+      if (rad < 330 && yn < TOP + 0.12) {
+        // the fir crown fanning out around the top of the trunk
+        const f = rad / 330;
+        X = Math.sin(al) * f * 3.2; Y = 15.8 - f * 3.4 + (Math.random() - 0.5) * 0.6; Z = Math.cos(al) * f * 3.2;
+      } else {
+        // the forest canopy around: on a ring of trees 4.5–9 away, as high as the view angle says
+        const th = Math.min(1.45, (rad / 950) * 1.45), Rc = 4.5 + Math.random() * 4.5;
+        X = Math.sin(al) * Rc; Y = Math.min(19, Rc / Math.tan(Math.max(th, 0.2))) - 0.5; Z = Math.cos(al) * Rc;
+      }
+    }
+    pos[k * 3] = X; pos[k * 3 + 1] = Y; pos[k * 3 + 2] = Z;
+    col[k * 3] = r; col[k * 3 + 1] = g; col[k * 3 + 2] = b; rnd[k] = Math.random();
+    k++;
+  }
+  const program = new Program(gl, {
+    vertex: `attribute vec3 position, aC; attribute float aR; uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uDpr, uOrig; uniform vec3 uA, uB;
+      varying vec3 vC; varying float vD;
+      void main(){
+        vec3 p = position;
+        // leaves stir, the bark stays still
+        float leaf = step(1.8, length(p.xz)) + step(13.5, p.y);
+        p += leaf * .06 * vec3(sin(uTime * .8 + aR * 30.), sin(uTime * .6 + aR * 50.), cos(uTime * .7 + aR * 70.));
+        float l = dot(aC, vec3(.3, .59, .11));
+        vec3 brand = mix(uA, mix(uB, vec3(1.), .4), clamp(l * 1.4, 0., 1.));
+        vC = mix(brand, pow(aC, vec3(.75)) * 1.6, uOrig) * (.8 + .45 * aR);
+        vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z;
+        gl_Position = projectionMatrix * mv; gl_PointSize = min(2.2 * uDpr * (7. / max(vD, .3)), 5. * uDpr); }`,
+    fragment: `precision highp float; varying vec3 vC; varying float vD;
+      void main(){ vec2 c = gl_PointCoord - .5; float r = dot(c, c); if (r > .25) discard;
+        gl_FragColor = vec4(vC * smoothstep(.25, 0., r) * exp(-max(vD - 8., 0.) * .04) * .75, 1.); }`,
+    uniforms: { uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uOrig: { value: 1 }, uA: { value: VIOLET }, uB: { value: LILAC } },
+    transparent: true, depthTest: false, depthWrite: false
+  });
+  program.setBlendFunc(gl.ONE, gl.ONE);
+  trunkProg = program;
+  trunkMesh = new Mesh(gl, { geometry: new Geometry(gl, { position: { size: 3, data: pos }, aC: { size: 3, data: col }, aR: { size: 1, data: rnd } }), program, mode: gl.POINTS, frustumCulled: false });
+  trunkMesh.visible = SCENE.name === 'fotka';
+  trunkMesh.setParent(scene);
   return program;
 }
 
@@ -110,6 +190,7 @@ function dust() {
 
 const progs = [dust()];
 tree().then(p => progs.push(p));
+trunk().then(p => progs.push(p));
 
 // ---------- camera: orbit with the scroll (damped), lean with the pointer ----------
 const cam = { yaw: 0, lx: 0, ly: 0 };
@@ -133,12 +214,23 @@ const tick = now => {
   // from the crown down to the roots: the camera starts close among the branches and pulls back as it descends,
   // so more and more of the tree comes into view; all the while it orbits the trunk
   const p = reduce ? 0.35 : cam2.p;
-  const ty = 2.7 + (-2.1 - 2.7) * smooth(0, 1, p);
-  const r = (narrow ? 1.5 : 1) * (5.6 + (10.5 - 5.6) * smooth(0, 0.9, p));
-  const yaw = (reduce ? 0 : cam.yaw) + cam.lx * 0.18, lift = r * (0.1 - 0.12 * smooth(0.6, 1, p)) - cam.ly * 0.3;
-  camera.position.set(Math.sin(yaw) * r, ty + lift, Math.cos(yaw) * r);
-  camera.lookAt([0, ty, 0]);
-  if (treeProg) treeProg.uniforms.uOrig.value += (TREE.orig - treeProg.uniforms.uOrig.value) * 0.08;
+  const yaw = (reduce ? 0 : cam.yaw) + cam.lx * 0.18;
+  if (SCENE.name === 'fotka') {
+    // up the trunk: from its mossy foot, looking up like the photo, climbing into the crown while circling the bark
+    const cy = 0.6 + 12.8 * smooth(0, 1, p);
+    const r = (narrow ? 1.25 : 1) * (3.4 - 0.6 * smooth(0, 1, p));
+    camera.position.set(Math.sin(yaw) * r, cy - cam.ly * 0.3, Math.cos(yaw) * r);
+    camera.lookAt([0, cy + 5.5 - 3.5 * smooth(0.7, 1, p), 0]);
+  } else {
+    // from the crown down to the roots: the camera starts close among the branches and pulls back as it descends,
+    // so more and more of the tree comes into view; all the while it orbits the trunk
+    const ty = 2.7 + (-2.1 - 2.7) * smooth(0, 1, p);
+    const r = (narrow ? 1.5 : 1) * (5.6 + (10.5 - 5.6) * smooth(0, 0.9, p));
+    const lift = r * (0.1 - 0.12 * smooth(0.6, 1, p)) - cam.ly * 0.3;
+    camera.position.set(Math.sin(yaw) * r, ty + lift, Math.cos(yaw) * r);
+    camera.lookAt([0, ty, 0]);
+  }
+  for (const pr of [treeProg, trunkProg]) if (pr) pr.uniforms.uOrig.value += (TREE.orig - pr.uniforms.uOrig.value) * 0.08;
   for (const pr of progs) { pr.uniforms.uTime.value = time; pr.uniforms.uDpr.value = renderer.dpr; }
   renderer.render({ scene, camera });
 };
@@ -170,6 +262,15 @@ document.querySelectorAll('[data-set]').forEach(inp => {
   const show = () => { if (out) out.textContent = Number(inp.value).toFixed(key === 'flat' ? 2 : 0); };
   show();
   inp.addEventListener('input', () => { S[key] = Number(inp.value); show(); if (key === 'orbit') toYaw(yawFor()); else build(); });
+});
+document.querySelectorAll('[data-strom]').forEach(b => {
+  b.setAttribute('aria-pressed', String(b.dataset.strom === SCENE.name));
+  b.addEventListener('click', () => {
+    SCENE.name = b.dataset.strom;
+    if (treeMesh) treeMesh.visible = SCENE.name === 'kresba';
+    if (trunkMesh) trunkMesh.visible = SCENE.name === 'fotka';
+    document.querySelectorAll('[data-strom]').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  });
 });
 const colBtn = document.getElementById('colors');
 if (colBtn) colBtn.addEventListener('click', () => { TREE.orig = TREE.orig ? 0 : 1; colBtn.textContent = TREE.orig ? 'Barvy webu' : 'Původní barvy'; });

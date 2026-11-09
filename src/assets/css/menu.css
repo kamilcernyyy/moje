@@ -4,7 +4,15 @@
 .gm { position: fixed; z-index: 40; right: max(20px, env(safe-area-inset-right, 0px)); top: max(18px, env(safe-area-inset-top, 0px)); view-transition-name: menu; }
 .gm a:focus-visible { outline: 2px solid #B19EEF; outline-offset: 2px; }
 .gm-m { display: none; }
-@media (max-width: 760px) { .gm { right: max(16px, env(safe-area-inset-right, 0px)); top: max(20px, env(safe-area-inset-top, 0px)); } .gm-d { display: none; } .gm-m { display: block; } }
+/* phone: the menu keeps the prompt's proportions and takes the top centre; scaled as a whole to the screen (with
+   the active tab pushed apart it is ~380 px wide). The top-left wordmark steps aside there: "Úvod" leads home. */
+@media (max-width: 760px) {
+  .gm { right: auto; left: 50%; top: max(14px, env(safe-area-inset-top, 0px)); transform: translateX(-50%) scale(.94); transform-origin: 50% 0; }
+  .gm-d { display: none; } .gm-m { display: block; }
+  .hp-logo { display: none !important; }
+}
+@media (max-width: 400px) { .gm { transform: translateX(-50%) scale(.88); } }
+@media (max-width: 370px) { .gm { transform: translateX(-50%) scale(.84); } }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
 .gcur { position: fixed; left: 0; top: 0; z-index: 80; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; pointer-events: none;

@@ -7,21 +7,22 @@ const LINKS = [
   { label: 'Mé práce', link: '/prace/' },
   { label: 'O mně', link: '/o-mne/' }
 ];
-const DESK = LINKS.map((l, i) => ({ ...l, width: [92, 125, 98][i] })); // 15 px, padding 24
-const PHONE = LINKS.map((l, i) => ({ ...l, width: [48, 70, 52][i] })); // 10 px, padding 9 (clears the logo down to 360 px)
+const ITEMS = LINKS.map((l, i) => ({ ...l, width: [92, 125, 98][i] })); // the prompt's defaults: 15 px, padding 24
 
-const GLASS = { pillColor: 'rgba(20, 20, 24, 0.5)', textColor: 'rgba(242, 242, 243, 0.78)', hoverTextColor: '#ffffff', anchorEdge: 'right' };
+const GLASS = { pillColor: 'rgba(20, 20, 24, 0.5)', textColor: 'rgba(242, 242, 243, 0.78)', hoverTextColor: '#ffffff' };
 // the component keeps the click for itself (it only marks the tab): here the click goes to the page
 const go = (i, item) => { if (item && item.link) location.href = item.link; };
 
+// same size and shape everywhere (the prompt's defaults); only the anchor differs: top right on a computer grows to
+// the left, centred on a phone grows both ways
 export default function Menu({ active }) {
   return (
     <>
       <div className="gm-d">
-        <GooeyNavbar items={DESK} activeIndex={active} defaultActiveIndex={active} onSelect={go} {...GLASS} />
+        <GooeyNavbar items={ITEMS} activeIndex={active} defaultActiveIndex={active} onSelect={go} anchorEdge="right" {...GLASS} />
       </div>
       <div className="gm-m">
-        <GooeyNavbar items={PHONE} activeIndex={active} defaultActiveIndex={active} onSelect={go} fontSize={10} paddingX={9} paddingY={12} neighborPush={10} {...GLASS} />
+        <GooeyNavbar items={ITEMS} activeIndex={active} defaultActiveIndex={active} onSelect={go} anchorEdge="center" {...GLASS} />
       </div>
     </>
   );

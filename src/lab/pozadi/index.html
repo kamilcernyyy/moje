@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratoř: 3D pozadí | Grafysta</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Pracovní laboratoř 3D pozadí webu Grafysta.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-display: swap; }
+  :root { color-scheme: dark; --fg: #f2f2f3; --mute: rgba(242,242,243,.62); --lilac: #B19EEF; --violet: #5227FF;
+    --glass: rgba(20,20,24,.5); --line: rgba(255,255,255,.18); --font: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; }
+  html, body { margin: 0; background: #0a0a0a; color: var(--fg); font-family: var(--font); }
+  #bg { position: fixed; inset: 0; z-index: 0; }
+  #bg canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  /* sample content to judge legibility over the background */
+  .lab-content { position: relative; z-index: 1; pointer-events: none; }
+  .lab-content > section { min-height: 100svh; display: grid; align-content: center; padding: 0 max(24px, 7vw); }
+  .lab-content h1, .lab-content h2 { margin: 0; font-weight: 400; text-transform: uppercase; line-height: .9; }
+  .lab-content h1 { font-size: clamp(64px, 11vw, 160px); }
+  .lab-content h2 { font-size: clamp(44px, 7vw, 96px); }
+  .lab-content p { max-width: 34ch; font-size: 22px; line-height: 1.2; color: var(--mute); letter-spacing: .02em; }
+  .lab-card { max-width: 420px; padding: 24px 26px; border-radius: 22px; background: var(--glass); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); }
+  .lab-card p { margin: 10px 0 0; }
+  .no-content .lab-content { visibility: hidden; }
+
+  /* the panel */
+  .lab-panel { position: fixed; z-index: 50; left: 16px; bottom: 16px; width: min(330px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
+    padding: 14px 16px 16px; border-radius: 20px; background: rgba(14,14,18,.72); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); font: 400 16px/1.1 var(--font); letter-spacing: .05em; text-transform: uppercase; }
+  .panel-closed .lab-panel { display: none; }
+  .lab-panel h2 { margin: 2px 0 10px; font-weight: 400; font-size: 22px; display: flex; justify-content: space-between; align-items: baseline; }
+  .lab-panel h2 small { font-size: 14px; color: var(--mute); }
+  .lab-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .lab-panel button { font: inherit; color: var(--fg); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px 6px; cursor: pointer; }
+  .lab-panel button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); }
+  .lab-panel button:focus-visible, .lab-panel input:focus-visible { outline: 2px solid var(--lilac); outline-offset: 2px; }
+  .lab-label { margin: 10px 0 6px; color: var(--mute); font-size: 14px; }
+  .lab-panel label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 0 0 8px; font-size: 15px; }
+  .lab-panel label input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--violet); }
+  .lab-panel output { color: var(--lilac); }
+  .lab-colors { display: flex; gap: 12px; }
+  .lab-colors label { display: flex; align-items: center; gap: 8px; }
+  .lab-colors input { width: 34px; height: 26px; border: 0; padding: 0; background: none; }
+  .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; }
+  .panel-closed .lab-toggle { display: block; }
+  .lab-toggle, .lab-close { font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; color: var(--fg); background: rgba(14,14,18,.72); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 8px; cursor: pointer;
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .lab-close { padding: 6px 10px 4px; font-size: 14px; }
+  @media (max-width: 760px) { .lab-panel { max-height: 46svh; } }
+</style>
+</head>
+<body>
+<script>if (matchMedia("(max-width: 760px)").matches) document.body.classList.add("panel-closed");</script>
+<!--MENU-->
+<div id="bg" aria-hidden="true"></div>
+
+<main class="lab-content">
+  <section><h1>Váš grafický<br>stylista.</h1><p>Ukázkový obsah, aby šlo posoudit čitelnost textu nad pozadím. Scrolluj: kamera jede scénou.</p></section>
+  <section><h2>Mé práce</h2><div class="lab-card"><strong>Doe &amp; Deer</strong><p>Skleněná karta jako na webu. Pozadí za ní se rozmaže.</p></div></section>
+  <section><h2>O mně</h2><p>Na webu by každá stránka měla svůj záběr kamery. Tady je přepínáš tlačítky v panelu.</p></section>
+  <section><h2>Kontakt</h2><p>Konec ukázky.</p></section>
+</main>
+
+<aside class="lab-panel" aria-label="Nastavení pozadí">
+  <h2>3D pozadí <small id="fps">— fps</small></h2>
+  <div class="lab-label">Varianta</div>
+  <div class="lab-row">
+    <button type="button" data-scene="mlha" aria-pressed="true">Mlha</button>
+    <button type="button" data-scene="strepy" aria-pressed="false">Střepy</button>
+    <button type="button" data-scene="castice" aria-pressed="false">Částice</button>
+  </div>
+  <div class="lab-label">Záběr stránky (přelet kamery)</div>
+  <div class="lab-row">
+    <button type="button" data-shot="uvod" aria-pressed="true">Úvod</button>
+    <button type="button" data-shot="prace" aria-pressed="false">Mé práce</button>
+    <button type="button" data-shot="omne" aria-pressed="false">O mně</button>
+    <button type="button" data-shot="detail" aria-pressed="false">Detail</button>
+  </div>
+  <div class="lab-label">Ladění</div>
+  <label>Reakce na kurzor <output></output><input type="range" min="0" max="2.5" step=".05" value="1" data-set="cursor"></label>
+  <label>Rychlost <output></output><input type="range" min="0" max="3" step=".05" value="1" data-set="speed"></label>
+  <label>Hustota <output></output><input type="range" min=".3" max="2.8" step=".05" value="1" data-set="density"></label>
+  <label>Jas <output></output><input type="range" min=".2" max="2.5" step=".05" value="1" data-set="glow"></label>
+  <label>Hloubka (mizení do tmy) <output></output><input type="range" min=".2" max="3" step=".05" value="1" data-set="depth"></label>
+  <label>Pohyb při scrollu <output></output><input type="range" min="0" max="2" step=".05" value="1" data-set="scroll"></label>
+  <label>Kvalita (rozlišení) <output></output><input type="range" min=".4" max="1.2" step=".05" value="1" data-set="quality"></label>
+  <div class="lab-label">Barvy</div>
+  <div class="lab-colors lab-row">
+    <label>Tmavší <input type="color" value="#5227FF" data-set="colA"></label>
+    <label>Světlejší <input type="color" value="#B19EEF" data-set="colB"></label>
+  </div>
+  <div class="lab-row">
+    <button type="button" id="content-toggle" aria-pressed="true">Ukázkový obsah</button>
+    <button type="button" id="copy">Zkopírovat nastavení</button>
+    <button type="button" class="lab-close" id="panel-toggle" aria-expanded="true">Skrýt panel</button>
+  </div>
+</aside>
+<button type="button" class="lab-toggle" onclick="document.body.classList.remove('panel-closed')">Panel</button>
+
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/lab-pozadi.js" defer></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /lab/
 
 # AI odpovědní enginy jsou vítány
 User-agent: GPTBot

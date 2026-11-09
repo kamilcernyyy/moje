@@ -23,6 +23,7 @@
 <meta property="og:image:alt" content="Grafysta, váš grafický stylista: weby a tisk">
 <meta name="twitter:card" content="summary_large_image">
 
+<script>try{var g=document.createElement("canvas").getContext("webgl2");if(g){document.documentElement.classList.add("pt");var x=g.getExtension("WEBGL_lose_context");x&&x.loseContext()}}catch(e){}</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
@@ -44,9 +45,10 @@
   @media (min-width: 640px) { .tr-headline { font-size: 88px; } .tr-lead { font-size: 26px; } .tr-btn { width: 190px; height: 64px; } .tr-btn-label { font-size: 26px; } }
   @media (min-width: 768px) { .tr-headline { font-size: 112px; } }
   /* scroll cue from the demo */
-  /* ink behind the cursor (ink.js): a fixed layer under the content, faded in once the fluid runs */
-  .ink { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; opacity: 0; transition: opacity 1.4s ease; }
-  .ink.is-on { opacity: 1; }
+  /* the headline made of particles (home-particles.js): a fixed layer under the content; the real h1 stays in the
+     page for search and screen readers but is drawn by the particles (html.pt, set only where WebGL2 runs) */
+  .pt-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
+  .pt .tr-headline { color: transparent; }
   #root { position: relative; z-index: 1; }
   .tr-hint { position: fixed; bottom: 32px; left: 50%; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 12px;
     transform: translateX(-50%); opacity: 0; transition: opacity .5s; pointer-events: none; }
@@ -100,10 +102,11 @@
 </script>
 </head>
 <body>
-<canvas class="ink" data-ink aria-hidden="true"></canvas>
+<canvas class="pt-canvas" data-particles aria-hidden="true"></canvas>
 <main id="root"><!--SSR--></main>
 <div class="tr-hint is-on" aria-hidden="true"><span class="tr-hint-label">Scroll</span><div class="tr-hint-track"><span></span></div></div>
 <script src="/assets/js/home.js" defer></script>
-<script src="/assets/js/ink.js" defer></script>
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/home-particles.js" defer></script>
 </body>
 </html>

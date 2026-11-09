@@ -74,6 +74,9 @@ const react = (entry, outfile) => buildSync({
   legalComments: 'none',
   logLevel: 'warning'
 });
+// headpage: the headline made of particles (OGL)
+buildSync({ entryPoints: ['app/home/particles.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/home-particles.js', legalComments: 'none', logLevel: 'warning' });
+buildSync({ entryPoints: ['app/home/particles-core.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/home-particles-core.js', legalComments: 'none', logLevel: 'warning' });
 // lab: the 3D background study (/lab/pozadi/, noindex, not linked from the site)
 buildSync({ entryPoints: ['app/lab/pozadi.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-pozadi.js', legalComments: 'none', logLevel: 'warning' });
 // the menu comes alive (hover liquid) once the page is idle: site.js loads it
@@ -165,7 +168,8 @@ const stamp = (file, refs) => {
   fs.writeFileSync(path.join('dist', file), t);
 };
 stamp('assets/js/ink.js', ['/assets/js/ink-core.js']);
-stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css', '/assets/js/ink.js']);
+stamp('assets/js/home-particles.js', ['/assets/js/home-particles-core.js']);
+stamp('index.html', ['/assets/js/home.js', '/assets/js/home.css', '/assets/js/home-particles.js']);
 stamp('assets/js/prace.js', ['/assets/js/tunnel-core.js']);
 stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
 stamp('assets/js/detail.js', ['/assets/js/detail-fx.js', '/assets/js/detail-fx.css']);

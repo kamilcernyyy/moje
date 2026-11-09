@@ -26,7 +26,8 @@
       if (t === last) return;
       last = t;
       var inRibbon = t && t.closest && t.closest('#depth-ribbon');
-      var open = t && t.closest && (t.closest('a, button, [role="button"], [data-tw-item], .live-pin') || (inRibbon && getComputedStyle(t).cursor === 'pointer'));
+      // the menu has its own liquid hover: the lens stays small there so the labels stay readable
+      var open = t && t.closest && !t.closest('.gm') && (t.closest('a, button, [role="button"], [data-tw-item], .live-pin') || (inRibbon && getComputedStyle(t).cursor === 'pointer'));
       cur.classList.toggle('is-big', !!open);
       cur.textContent = inRibbon && open ? 'Otevřít' : '';
     }, { passive: true });
@@ -57,6 +58,11 @@
       g.fromTo(chars, { y: 0 }, { y: -10, duration: 0.18, ease: 'power2.out', stagger: 0.035, yoyo: true, repeat: 1, overwrite: true });
     });
   }
+
+  // the menu (Gooey Navbar, server-rendered) comes alive once the page is idle: its links work before that
+  var addMenu = function () { if (!document.getElementById('gm')) return; var s = document.createElement('script'); s.src = '/assets/js/menu.js'; s.defer = true; document.head.appendChild(s); };
+  var idle = function (fn) { 'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 1200); };
+  if (document.readyState === 'complete') idle(addMenu); else addEventListener('load', function () { idle(addMenu); }, { once: true });
 
   // visits without cookies (záměr 16): Vercel Web Analytics, loaded after the page is up; it only answers on Vercel
   // once Analytics is switched on for the project, so local builds skip it

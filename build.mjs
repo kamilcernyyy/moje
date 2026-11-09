@@ -36,15 +36,22 @@ for (const f of ['assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js',
   const urls = works.filter(w => !w.ukazka).map(w => `  <url><loc>https://grafysta.cz/prace/${w.slug}/</loc><lastmod>${new Date().toISOString().slice(0, 10)}</lastmod></url>`).join('\n');
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('</urlset>', (urls ? urls + '\n' : '') + '</urlset>'));
 }
-// global menu (glass pill), page transitions and the shared site script on every page
+// global menu (Gooey Navbar in glass), page transitions and the shared site script on every page.
+// The menu is server-rendered into every page (links work at once), its Tailwind inlined; menu.js hydrates it later.
 const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', ...works.map(w => `prace/${w.slug}/index.html`)];
 {
+  buildSync({ entryPoints: ['app/menu/ssr.jsx'], bundle: true, jsx: 'automatic', platform: 'node', packages: 'external', format: 'esm',
+    define: { 'process.env.NODE_ENV': '"production"' }, outfile: 'menu-ssr.tmp.mjs', logLevel: 'warning' });
+  const { default: renderMenu } = await import(pathToFileURL(path.resolve('menu-ssr.tmp.mjs')).href + '?t=' + Date.now());
+  fs.rmSync('menu-ssr.tmp.mjs', { force: true });
+  const twMenu = execSync('npx tailwindcss -c tailwind.config.cjs -i app/menu/menu.css --content "./components/ui/gooey-navbar.tsx,./app/menu/*.jsx" --minify', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
   const menuCss = fs.readFileSync('src/assets/css/menu.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s*\n\s*/g, ' ').trim();
+  const html = {};
   for (const f of htmlPages) {
     const p = path.join('dist', f);
-    const here = f === 'index.html' ? '/' : f === '404.html' ? '' : f.startsWith('o-mne') ? '/o-mne/' : '/prace/';
-    const link = (href, label) => `<a href="${href}"${href === here ? ' aria-current="page"' : ''}>${label}</a>`;
-    const menu = `<style>${menuCss}</style><nav class="gm" aria-label="Hlavní menu">${link('/', 'Úvod')}${link('/prace/', 'Mé práce')}${link('/o-mne/', 'O mně')}</nav>`;
+    const active = f === 'index.html' ? 0 : f === '404.html' ? -1 : f.startsWith('o-mne') ? 2 : 1;
+    html[active] ??= renderMenu(active);
+    const menu = `<link rel="preload" href="/assets/fonts/inter-600-menu.woff2" as="font" type="font/woff2" crossorigin><style>${menuCss}${twMenu}</style><div class="gm" id="gm" data-active="${active}">${html[active]}</div>`;
     let t = fs.readFileSync(p, 'utf8');
     t = t.includes('<!--MENU-->') ? t.replace('<!--MENU-->', menu) : t.replace(/<body([^>]*)>/, `<body$1>\n${menu}`);
     t = t.replace('</body>', '<script src="/assets/js/site.js" defer></script>\n</body>');
@@ -67,6 +74,8 @@ const react = (entry, outfile) => buildSync({
   legalComments: 'none',
   logLevel: 'warning'
 });
+// the menu comes alive (hover liquid) once the page is idle: site.js loads it
+react('app/menu/main.jsx', 'dist/assets/js/menu.js');
 // headpage: Tile Reveal (React + GlassSurface buttons)
 react('app/home/main.jsx', 'dist/assets/js/home.js');
 // gallery of works (/prace/): flame panel with glass buttons over the Depth Ribbon
@@ -160,6 +169,7 @@ stamp('assets/js/detail-web.js', ['/assets/js/device-core.js']);
 stamp('assets/js/detail.js', ['/assets/js/detail-fx.js', '/assets/js/detail-fx.css']);
 stamp('prace/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/intro.js', '/assets/js/flight.js', '/assets/js/prace.js', '/assets/js/prace.css', '/assets/js/tw.css']);
 stamp('o-mne/index.html', ['/assets/vendor/gsap.min.js', '/o-mne/loader.js', '/o-mne/app.js', '/o-mne/app.css']);
+stamp('assets/js/site.js', ['/assets/js/menu.js']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);
 for (const w of works) stamp(`prace/${w.slug}/index.html`, ['/assets/css/detail.css', '/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/detail.js', '/assets/js/detail-web.js', '/assets/js/detail-tisk.js', '/assets/js/detail-tisk.css'].filter(r => fs.existsSync(path.join('dist', r.slice(1)))));
 

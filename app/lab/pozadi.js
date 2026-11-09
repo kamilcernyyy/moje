@@ -247,7 +247,151 @@ function makeField() {
   };
 }
 
-const MAKERS = { mlha: makeMist, strepy: makeShards, castice: makeField };
+
+// ---------- 4) Obraz: particles that form a picture (the GRAFYSTA wordmark, a Doe & Deer illustration) ----------
+// Points are sampled from a picture drawn into a 2D canvas: the wordmark's letters, or the "ink" of an illustration
+// (everything that is not the white paper). Brighter ink sits closer to the camera, so the picture has depth when the
+// camera leans. The pointer blows the points aside; switching pictures flies every point to its new place.
+const IMG = { mix: 0, orig: false };
+let imgProgram = null;
+const COUNT = 40000;
+async function samplePictures() {
+  const pick = (weights, w, h, n) => {
+    // pixel indices drawn in proportion to their weight
+    const cdf = new Float32Array(weights.length); let s = 0;
+    for (let i = 0; i < weights.length; i++) { s += weights[i]; cdf[i] = s; }
+    const out = new Uint32Array(n);
+    for (let k = 0; k < n; k++) {
+      const r = Math.random() * s; let lo = 0, hi = cdf.length - 1;
+      while (lo < hi) { const m = (lo + hi) >> 1; if (cdf[m] < r) lo = m + 1; else hi = m; }
+      out[k] = lo;
+    }
+    return out;
+  };
+  // A: the wordmark
+  try { await document.fonts.load('400 200px "Odibee Sans CZ"'); } catch (e) {}
+  const cw = 1400, ch = 380, c1 = document.createElement('canvas'); c1.width = cw; c1.height = ch;
+  const x1 = c1.getContext('2d', { willReadFrequently: true });
+  x1.fillStyle = '#fff'; x1.textAlign = 'center'; x1.textBaseline = 'middle';
+  x1.font = '400 300px "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif';
+  x1.fillText('GRAFYSTA', cw / 2, ch / 2 + 12);
+  const d1 = x1.getImageData(0, 0, cw, ch).data, w1 = new Float32Array(cw * ch);
+  for (let i = 0; i < w1.length; i++) w1[i] = d1[i * 4 + 3] > 128 ? 1 : 0;
+  const s1 = pick(w1, cw, ch, COUNT);
+  const A = new Float32Array(COUNT * 3), CA = new Float32Array(COUNT * 3);
+  for (let k = 0; k < COUNT; k++) {
+    const i = s1[k], x = (i % cw) + Math.random(), y = Math.floor(i / cw) + Math.random();
+    A[k * 3] = (x / cw - 0.5) * 8; A[k * 3 + 1] = -(y / ch - 0.5) * (8 * ch / cw); A[k * 3 + 2] = (Math.random() - 0.5) * 0.35;
+    CA[k * 3] = CA[k * 3 + 1] = CA[k * 3 + 2] = 0.75 + Math.random() * 0.25;
+  }
+  // B: the illustration (its ink, the white paper left out)
+  const img = new Image(); img.src = '/prace/dd-sirup/obal.webp'; await img.decode();
+  const iw = 420, ih = 420, c2 = document.createElement('canvas'); c2.width = iw; c2.height = ih;
+  const x2 = c2.getContext('2d', { willReadFrequently: true }); x2.drawImage(img, 0, 0, iw, ih);
+  const d2 = x2.getImageData(0, 0, iw, ih).data, w2 = new Float32Array(iw * ih), L = new Float32Array(iw * ih);
+  for (let i = 0; i < L.length; i++) L[i] = (0.299 * d2[i * 4] + 0.587 * d2[i * 4 + 1] + 0.114 * d2[i * 4 + 2]) / 255;
+  for (let y = 1; y < ih - 1; y++) for (let x = 1; x < iw - 1; x++) {
+    const i = y * iw + x, r = d2[i * 4], g = d2[i * 4 + 1], b = d2[i * 4 + 2];
+    const ink = Math.max(1 - L[i], (Math.max(r, g, b) - Math.min(r, g, b)) / 255); // dark or coloured = ink, white paper = nothing
+    // outlines (Sobel) get extra points, so eyes, bottle and edges read clearly
+    const gx = L[i - iw + 1] + 2 * L[i + 1] + L[i + iw + 1] - L[i - iw - 1] - 2 * L[i - 1] - L[i + iw - 1];
+    const gy = L[i + iw - 1] + 2 * L[i + iw] + L[i + iw + 1] - L[i - iw - 1] - 2 * L[i - iw] - L[i - iw + 1];
+    w2[i] = ink > 0.16 ? Math.pow(ink, 1.2) * 0.6 + Math.min(1, Math.hypot(gx, gy) * 1.6) * 1.4 : 0;
+  }
+  const s2 = pick(w2, iw, ih, COUNT);
+  const B = new Float32Array(COUNT * 3), CB = new Float32Array(COUNT * 3);
+  for (let k = 0; k < COUNT; k++) {
+    const i = s2[k], x = (i % iw) + Math.random(), y = Math.floor(i / iw) + Math.random();
+    const r = d2[i * 4] / 255, g = d2[i * 4 + 1] / 255, b = d2[i * 4 + 2] / 255, lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    B[k * 3] = (x / iw - 0.5) * 4.4; B[k * 3 + 1] = -(y / ih - 0.5) * 4.4; B[k * 3 + 2] = (0.6 - lum) * 1.1 + (Math.random() - 0.5) * 0.12;
+    CB[k * 3] = r; CB[k * 3 + 1] = g; CB[k * 3 + 2] = b;
+  }
+  // pair points left to right in both pictures, so the swarm flows across instead of criss-crossing
+  const order = arr => Array.from({ length: COUNT }, (_, k) => k).sort((p, q) => arr[p * 3] - arr[q * 3]);
+  const oa = order(A), ob = order(B);
+  const remap = (src, o, n) => { const out = new Float32Array(COUNT * n); o.forEach((k, j) => { for (let c = 0; c < n; c++) out[j * n + c] = src[k * n + c]; }); return out; };
+  return { A: remap(A, oa, 3), CA: remap(CA, oa, 3), B: remap(B, ob, 3), CB: remap(CB, ob, 3) };
+}
+function makePicture() {
+  const rnd = new Float32Array(COUNT * 4);
+  for (let i = 0; i < rnd.length; i++) rnd[i] = Math.random();
+  const zero = new Float32Array(COUNT * 3);
+  const geometry = new Geometry(gl, {
+    position: { size: 3, data: zero }, aB: { size: 3, data: new Float32Array(COUNT * 3) },
+    aCA: { size: 3, data: new Float32Array(COUNT * 3) }, aCB: { size: 3, data: new Float32Array(COUNT * 3) }, aR: { size: 4, data: rnd }
+  });
+  const program = new Program(gl, {
+    vertex: `attribute vec3 position, aB, aCA, aCB; attribute vec4 aR;
+      uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uMix, uSize, uDpr, uCount, uPush, uScale, uOrig, uReady;
+      uniform vec3 uRo, uRd, uA, uB;
+      varying vec3 vC; varying float vD, vHide;
+      void main(){
+        // each point leaves a little later than its neighbour and flies an arc
+        float m = smoothstep(0., 1., clamp(uMix * 1.5 - aR.x * .5, 0., 1.));
+        vec3 p = mix(position, aB, m);
+        p += (aR.yzw - .5) * vec3(2.6, 2.2, 3.2) * sin(3.14159 * m);
+        p *= uScale;
+        // breathing, and the swarm gathers in when the page opens
+        p += .025 * vec3(sin(uTime * 1.3 + aR.x * 6.28), sin(uTime * 1.1 + aR.y * 6.28), sin(uTime * .9 + aR.z * 6.28));
+        p = mix((aR.xyz - .5) * vec3(14., 9., 10.), p, uReady);
+        // the pointer blows the points aside (distance from the pointer ray)
+        vec3 rel = p - uRo; float along = dot(rel, uRd); vec3 off = rel - uRd * along; float d = length(off);
+        p += normalize(off + 1e-4) * uPush * exp(-d * d * 2.2) * (.6 + .6 * aR.y);
+        vec3 brand = mix(uA, uB, clamp(aR.w * .6 + (1. - m) * .3 + dot(aCB, vec3(.3, .59, .11)) * m * .6, 0., 1.));
+        vec3 own = mix(aCA * mix(uA, uB, aR.w), aCB, m);
+        vC = mix(brand * 1.25, own * 1.5, uOrig);
+        vHide = step(uCount, aR.z);
+        vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z;
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = uSize * uDpr * (6. / max(vD, .5));
+      }`,
+    fragment: `precision highp float; varying vec3 vC; varying float vD, vHide; uniform float uGlow, uDepth;
+      void main(){
+        if (vHide > .5) discard;
+        vec2 c = gl_PointCoord - .5; float r = dot(c, c); if (r > .25) discard;
+        float fog = exp(-max(vD - 3., 0.) * .08 * uDepth);
+        gl_FragColor = vec4(vC * smoothstep(.25, .0, r) * fog * uGlow * .62, 1.);
+      }`,
+    uniforms: { uTime: { value: 0 }, uMix: { value: 0 }, uSize: { value: 2.3 }, uDpr: { value: 1 }, uCount: { value: 1 }, uPush: { value: 0 }, uScale: { value: 1 },
+      uOrig: { value: 0 }, uReady: { value: 0 }, uRo: { value: new Vec3() }, uRd: { value: new Vec3(0, 0, -1) },
+      uA: { value: hex(S.colA) }, uB: { value: hex(S.colB) }, uGlow: { value: 1 }, uDepth: { value: 1 } },
+    transparent: true, depthTest: false, depthWrite: false
+  });
+  program.setBlendFunc(gl.ONE, gl.ONE);
+  imgProgram = program;
+  const mesh = new Mesh(gl, { geometry, program, mode: gl.POINTS, frustumCulled: false });
+  const ready = { v: 0 }, orig = { v: IMG.orig ? 1 : 0 };
+  samplePictures().then(P => {
+    geometry.updateAttribute(Object.assign(geometry.attributes.position, { data: P.A }));
+    geometry.updateAttribute(Object.assign(geometry.attributes.aB, { data: P.B }));
+    geometry.updateAttribute(Object.assign(geometry.attributes.aCA, { data: P.CA }));
+    geometry.updateAttribute(Object.assign(geometry.attributes.aCB, { data: P.CB }));
+    if (gsap && !reduce) gsap.to(ready, { v: 1, duration: 2.4, ease: 'power3.out' }); else ready.v = 1;
+  });
+  return {
+    root: mesh,
+    update(time, cam, light, ray) {
+      const u = program.uniforms;
+      // keep the picture inside the screen width (phones)
+      const tn = Math.tan((camera.fov * Math.PI) / 360), dist = cam.pos.len();
+      const visW = 2 * tn * dist * (innerWidth / innerHeight);
+      u.uScale.value = Math.min(1, (visW * 0.86) / (8 + (4.4 - 8) * IMG.mix));
+      orig.v += ((IMG.orig ? 1 : 0) - orig.v) * 0.08;
+      u.uTime.value = time; u.uMix.value = IMG.mix; u.uDpr.value = renderer.dpr; u.uCount.value = Math.min(1, 0.4 * S.density);
+      u.uPush.value = reduce ? 0 : 0.9 * S.cursor; u.uRo.value.copy(ray.origin); u.uRd.value.copy(ray.dir);
+      u.uOrig.value = orig.v; u.uReady.value = ready.v;
+      u.uGlow.value = S.glow; u.uDepth.value = S.depth; u.uA.value = hex(S.colA); u.uB.value = hex(S.colB);
+    }
+  };
+}
+const setPicture = (name, instant) => {
+  const to = name === 'ilustrace' ? 1 : 0;
+  if (instant || reduce || !gsap) IMG.mix = to;
+  else gsap.to(IMG, { mix: to, duration: 2.6, ease: 'power2.inOut', overwrite: true });
+  document.querySelectorAll('[data-img]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.img === name)));
+};
+
+const MAKERS = { mlha: makeMist, strepy: makeShards, castice: makeField, obraz: makePicture };
 let current = null;
 const setScene = name => {
   S.scene = name;
@@ -255,6 +399,7 @@ const setScene = name => {
   current = MAKERS[name]();
   current.root.setParent(scene);
   document.querySelectorAll('[data-scene]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scene === name)));
+  document.body.classList.toggle('is-obraz', name === 'obraz');
   resize();
 };
 
@@ -297,7 +442,13 @@ function frame(now) {
 
 // ---------- panel ----------
 document.querySelectorAll('[data-scene]').forEach(b => b.addEventListener('click', () => setScene(b.dataset.scene)));
-document.querySelectorAll('[data-shot]').forEach(b => b.addEventListener('click', () => goShot(b.dataset.shot)));
+document.querySelectorAll('[data-shot]').forEach(b => b.addEventListener('click', () => {
+  goShot(b.dataset.shot);
+  if (S.scene === 'obraz' && (b.dataset.shot === 'uvod' || b.dataset.shot === 'prace')) setPicture(b.dataset.shot === 'uvod' ? 'napis' : 'ilustrace');
+}));
+document.querySelectorAll('[data-img]').forEach(b => b.addEventListener('click', () => setPicture(b.dataset.img)));
+const origBtn = document.getElementById('orig');
+if (origBtn) origBtn.addEventListener('click', () => { IMG.orig = !IMG.orig; origBtn.setAttribute('aria-pressed', String(IMG.orig)); });
 document.querySelectorAll('[data-set]').forEach(inp => {
   const key = inp.dataset.set, out = inp.parentElement.querySelector('output');
   const apply = () => {
@@ -326,7 +477,7 @@ if (panelBtn) panelBtn.addEventListener('click', () => {
 });
 
 const startScene = new URLSearchParams(location.search).get('s');
-setScene(MAKERS[startScene] ? startScene : 'mlha');
+setScene(MAKERS[startScene] ? startScene : 'obraz');
 goShot('uvod', true);
 onScroll();
 requestAnimationFrame(frame);

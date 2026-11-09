@@ -46,6 +46,7 @@
   .lab-colors { display: flex; gap: 12px; }
   .lab-colors label { display: flex; align-items: center; gap: 8px; }
   .lab-colors input { width: 34px; height: 26px; border: 0; padding: 0; background: none; }
+  .lab-obraz { display: none; } .is-obraz .lab-obraz { display: block; }
   .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; }
   .panel-closed .lab-toggle { display: block; }
   .lab-toggle, .lab-close { font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; color: var(--fg); background: rgba(14,14,18,.72); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 8px; cursor: pointer;
@@ -73,6 +74,15 @@
     <button type="button" data-scene="mlha" aria-pressed="true">Mlha</button>
     <button type="button" data-scene="strepy" aria-pressed="false">Střepy</button>
     <button type="button" data-scene="castice" aria-pressed="false">Částice</button>
+    <button type="button" data-scene="obraz" aria-pressed="false">Obraz z částic</button>
+  </div>
+  <div class="lab-obraz">
+    <div class="lab-label">Obraz (přelet částic)</div>
+    <div class="lab-row">
+      <button type="button" data-img="napis" aria-pressed="true">Nápis Grafysta</button>
+      <button type="button" data-img="ilustrace" aria-pressed="false">Ilustrace Doe &amp; Deer</button>
+      <button type="button" id="orig" aria-pressed="false">Původní barvy</button>
+    </div>
   </div>
   <div class="lab-label">Záběr stránky (přelet kamery)</div>
   <div class="lab-row">

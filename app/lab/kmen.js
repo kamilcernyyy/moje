@@ -20,7 +20,8 @@ const S = {
   speed: 1, // swimming speed
   radius: 1, // how far from the trunk they circle
   boost: 1.5, // how much the scroll hurries them on
-  wave: 1 // body waving
+  wave: 1, // body waving
+  size: 1 // particle size (trunk, sharks, dust)
 };
 const MAX = 14;
 
@@ -35,7 +36,9 @@ const scene = new Transform();
 const VIOLET = [82 / 255, 39 / 255, 1], LILAC = [177 / 255, 158 / 255, 239 / 255];
 const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.perspective({ aspect: innerWidth / innerHeight }); };
 addEventListener('resize', resize); resize();
-const TREE = { orig: 1 };
+// colours: 1 = original (the photo's moss, the woodcut's black-and-white), 0 = site colours; particle size for all
+const COL = { trunk: 1, shark: 0, mode: 'smisene' };
+const SIZE = { value: 1 };
 const progs = [];
 
 // ---------- the trunk from the photo (as in the camera lab) ----------
@@ -81,7 +84,7 @@ async function trunk() {
     k++;
   }
   const program = new Program(gl, {
-    vertex: `attribute vec3 position, aC; attribute float aR; uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uDpr, uOrig; uniform vec3 uA, uB;
+    vertex: `attribute vec3 position, aC; attribute float aR; uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uDpr, uOrig, uSize; uniform vec3 uA, uB;
       varying vec3 vC; varying float vD;
       void main(){
         vec3 p = position;
@@ -91,11 +94,11 @@ async function trunk() {
         vec3 brand = mix(uA, mix(uB, vec3(1.), .4), clamp(l * 1.4, 0., 1.));
         vC = mix(brand, pow(aC, vec3(.75)) * 1.6, uOrig) * (.8 + .45 * aR);
         vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z;
-        gl_Position = projectionMatrix * mv; gl_PointSize = min(2.2 * uDpr * (7. / max(vD, .3)), 5. * uDpr); }`,
+        gl_Position = projectionMatrix * mv; gl_PointSize = min(2.2 * uDpr * uSize * (7. / max(vD, .3)), 5. * uDpr * uSize); }`,
     fragment: `precision highp float; varying vec3 vC; varying float vD;
       void main(){ vec2 c = gl_PointCoord - .5; float r = dot(c, c); if (r > .25) discard;
         gl_FragColor = vec4(vC * smoothstep(.25, 0., r) * exp(-max(vD - 8., 0.) * .04) * .75, 1.); }`,
-    uniforms: { uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uOrig: { value: 1 }, uA: { value: VIOLET }, uB: { value: LILAC } },
+    uniforms: { uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uOrig: { value: 1 }, uSize: SIZE, uA: { value: VIOLET }, uB: { value: LILAC } },
     transparent: true, depthTest: false, depthWrite: false
   });
   program.setBlendFunc(gl.ONE, gl.ONE);
@@ -105,6 +108,7 @@ async function trunk() {
 }
 
 // a slow cloud of faint points around the trunk, so depth reads everywhere
+let dustProg = null;
 (function dust() {
   const N = narrow ? 2500 : 5000, pos = new Float32Array(N * 3);
   for (let k = 0; k < N; k++) {
@@ -112,17 +116,18 @@ async function trunk() {
     pos[k * 3] = Math.cos(a) * r; pos[k * 3 + 1] = Math.random() * 18 - 1; pos[k * 3 + 2] = Math.sin(a) * r;
   }
   const program = new Program(gl, {
-    vertex: `attribute vec3 position; uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uDpr; uniform vec3 uA, uB; varying vec3 vC; varying float vD;
+    vertex: `attribute vec3 position; uniform mat4 viewMatrix, projectionMatrix; uniform float uTime, uDpr, uSize, uOrig; uniform vec3 uA, uB; varying vec3 vC; varying float vD;
       void main(){ vec3 p = position; p.y += sin(uTime * .2 + p.x) * .3; p.x += cos(uTime * .15 + p.z) * .3;
-        vC = mix(uA, uB, fract(position.x * 3.7)) * .35;
-        vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z; gl_Position = projectionMatrix * mv; gl_PointSize = 2.6 * uDpr * (6. / max(vD, .5)); }`,
+        vC = mix(mix(uA, uB, fract(position.x * 3.7)), vec3(.62, .66, .58) * (.6 + .5 * fract(position.z * 5.3)), uOrig) * .35;
+        vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z; gl_Position = projectionMatrix * mv; gl_PointSize = 2.6 * uDpr * uSize * (6. / max(vD, .5)); }`,
     fragment: `precision highp float; varying vec3 vC; varying float vD;
       void main(){ vec2 c = gl_PointCoord - .5; float r = dot(c, c); if (r > .25) discard;
         gl_FragColor = vec4(vC * smoothstep(.25, 0., r) * exp(-max(vD - 4., 0.) * .07), 1.); }`,
-    uniforms: { uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uA: { value: VIOLET }, uB: { value: LILAC } },
+    uniforms: { uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uSize: SIZE, uOrig: { value: 0 }, uA: { value: VIOLET }, uB: { value: LILAC } },
     transparent: true, depthTest: false, depthWrite: false
   });
   program.setBlendFunc(gl.ONE, gl.ONE);
+  dustProg = program;
   new Mesh(gl, { geometry: new Geometry(gl, { position: { size: 3, data: pos } }), program, mode: gl.POINTS, frustumCulled: false }).setParent(scene);
   progs.push(program);
 })();
@@ -164,7 +169,7 @@ function sample(img, n) {
 }
 
 const SU = {
-  uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uPx: { value: 1 }, uSp: { value: 0.01 },
+  uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uPx: { value: 1 }, uSp: { value: 0.01 }, uSize: SIZE, uOrig: { value: 0 },
   uA: { value: VIOLET }, uB: { value: LILAC }
 };
 const sharkProg = new Program(gl, {
@@ -172,7 +177,7 @@ const sharkProg = new Program(gl, {
     in vec3 position; in float aR; in float aE;
     in vec3 iPos; in vec4 iDir; in vec4 iSwim; // iDir: heading (xyz), length · iSwim: tail phase, wave, bend, hurry
     uniform mat4 viewMatrix, projectionMatrix;
-    uniform float uTime, uDpr, uPx, uSp; uniform vec3 uA, uB;
+    uniform float uTime, uDpr, uPx, uSp, uSize, uOrig; uniform vec3 uA, uB;
     out vec3 vC; out float vA; out float vD;
     void main() {
       float L = iDir.w, r = aR;
@@ -190,9 +195,11 @@ const sharkProg = new Program(gl, {
       p += .015 * L * vec3(sin(uTime * 1.3 + r * 40.), sin(uTime * 1.1 + r * 60.), sin(uTime * .9 + r * 80.));
       vec4 mv = viewMatrix * vec4(p, 1.); vD = -mv.z;
       gl_Position = projectionMatrix * mv;
-      vC = mix(uA * .9, mix(uB, vec3(1.), .35), clamp(aE * 1.3, 0., 1.)) * (.75 + .5 * r);
+      // site colours: violet → lilac on the edges; original: the woodcut's neutral grey, its cuts and edges white
+      float e = clamp(aE * 1.3, 0., 1.);
+      vC = mix(mix(uA * .9, mix(uB, vec3(1.), .35), e), mix(vec3(.5, .5, .49), vec3(1.), e), uOrig) * (.75 + .5 * r);
       vA = (.42 + .3 * clamp(aE, 0., 1.)) * (1. + iSwim.w * .3);
-      gl_PointSize = L < .001 ? 0. : clamp(1.3 * uSp * L * uPx / max(vD, .2), 1., 9. * uDpr);
+      gl_PointSize = L < .001 ? 0. : clamp(1.3 * uSize * uSp * L * uPx / max(vD, .2), 1., 9. * uDpr * uSize);
     }`,
   fragment: /* glsl */ `#version 300 es
     precision highp float; in vec3 vC; in float vA; in float vD; out vec4 o;
@@ -300,7 +307,9 @@ const tick = now => {
   const r = (narrow ? 1.3 : 1) * (6.6 - 0.8 * smooth(0, 1, p));
   camera.position.set(Math.sin(yaw) * r, cy - cam.ly * 0.4, Math.cos(yaw) * r);
   camera.lookAt([0, cy + 1.8 - 1.2 * smooth(0.75, 1, p), 0]);
-  if (trunkProg) trunkProg.uniforms.uOrig.value += (TREE.orig - trunkProg.uniforms.uOrig.value) * 0.08;
+  if (trunkProg) trunkProg.uniforms.uOrig.value += (COL.trunk - trunkProg.uniforms.uOrig.value) * 0.08;
+  SU.uOrig.value += (COL.shark - SU.uOrig.value) * 0.08;
+  if (dustProg) dustProg.uniforms.uOrig.value += (COL.shark - dustProg.uniforms.uOrig.value) * 0.08;
   SU.uPx.value = (innerHeight * renderer.dpr) / (2 * Math.tan((45 * Math.PI) / 360));
   for (const pr of progs) { pr.uniforms.uTime.value = time; pr.uniforms.uDpr.value = renderer.dpr; }
   renderer.render({ scene, camera });
@@ -332,17 +341,22 @@ document.querySelectorAll('[data-set]').forEach(inp => {
   show();
   inp.addEventListener('input', () => {
     S[key] = Number(inp.value); show();
-    if (key === 'orbit') toYaw(yawFor()); else if (key === 'angle') build(); else if (key === 'count') spread();
+    if (key === 'orbit') toYaw(yawFor()); else if (key === 'angle') build(); else if (key === 'count') spread(); else if (key === 'size') SIZE.value = S.size;
   });
 });
-const colBtn = document.getElementById('colors');
-colBtn.setAttribute('aria-pressed', 'false');
-colBtn.addEventListener('click', () => { TREE.orig = TREE.orig ? 0 : 1; colBtn.setAttribute('aria-pressed', String(!TREE.orig)); });
+const MODES = { puvodni: [1, 1], web: [0, 0], smisene: [1, 0] };
+const modeBtns = document.querySelectorAll('[data-barvy]');
+const setMode = m => {
+  COL.mode = m; [COL.trunk, COL.shark] = MODES[m];
+  modeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.barvy === m)));
+};
+modeBtns.forEach(b => b.addEventListener('click', () => setMode(b.dataset.barvy)));
+setMode(COL.mode);
 document.getElementById('panel-toggle').addEventListener('click', () => document.body.classList.add('panel-closed'));
 document.querySelector('.lab-toggle').addEventListener('click', () => document.body.classList.remove('panel-closed'));
 const copy = document.getElementById('copy');
 copy.addEventListener('click', () => {
-  const txt = JSON.stringify({ ...S, barvyWebu: !TREE.orig });
+  const txt = JSON.stringify({ ...S, barvy: COL.mode });
   (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { copy.textContent = 'Zkopírováno ✓'; }, () => { prompt('Nastavení:', txt); });
   setTimeout(() => { copy.textContent = 'Zkopírovat nastavení'; }, 1800);
 });

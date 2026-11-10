@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratoř: hejno po celé stránce | Grafysta</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Pracovní laboratoř: žraloci z částic plavou po celé stránce a za scrollem.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-display: swap; }
+  :root { color-scheme: dark; --fg: #f2f2f3; --mute: rgba(242,242,243,.7); --lilac: #B19EEF; --violet: #5227FF; --line: rgba(255,255,255,.16);
+    --font: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; }
+  html { background: #0a0a0a; }
+  body { margin: 0; color: var(--fg); font-family: var(--font); letter-spacing: .03em; background: #0a0a0a; }
+  #bg { position: fixed; inset: 0; z-index: 0; }
+  #bg canvas { display: block; width: 100% !important; height: 100% !important; }
+  .lz-src { position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  /* the page: sections over the sea of sharks */
+  .lz-page { position: relative; z-index: 1; }
+  .lz-sec { min-height: 100svh; display: grid; align-items: center; padding: 120px max(16px, 6vw) 80px; box-sizing: border-box; }
+  .lz-sec:nth-child(even) { justify-items: end; }
+  .lz-card { max-width: 520px; padding: 26px 28px 24px; border-radius: 26px; background: rgba(12,12,16,.42); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3); backdrop-filter: blur(10px) saturate(1.3); }
+  .lz-num { display: block; margin-bottom: 8px; color: var(--lilac); font-size: 18px; letter-spacing: .12em; }
+  .lz-sec h1, .lz-sec h2 { margin: 0 0 12px; font-weight: 400; line-height: .9; text-transform: uppercase; }
+  .lz-sec h1 { font-size: clamp(64px, 11vw, 168px); }
+  .lz-sec h2 { font-size: clamp(46px, 7vw, 96px); }
+  .lz-sec p { margin: 0; font-size: clamp(20px, 2vw, 26px); line-height: 1.15; color: var(--mute); }
+  .lz-hero { justify-items: start; }
+  .lz-hero .lz-card { max-width: 900px; background: none; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; }
+  .lz-hint { margin-top: 28px !important; color: var(--lilac) !important; }
+
+  /* panel (same as the other labs) */
+  .lab-panel { position: fixed; z-index: 50; left: 16px; bottom: 16px; width: min(320px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
+    padding: 14px 16px 16px; border-radius: 20px; background: rgba(14,14,18,.8); border: 1px solid var(--line); box-sizing: border-box;
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); font: 400 16px/1.1 var(--font); letter-spacing: .05em; text-transform: uppercase; }
+  .panel-closed .lab-panel { display: none; }
+  .lab-panel h2 { margin: 2px 0 6px; font-weight: 400; font-size: 22px; }
+  .lab-panel p { margin: 0 0 12px; font-size: 14px; line-height: 1.15; color: var(--mute); }
+  .lab-panel label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 0 0 9px; font-size: 15px; }
+  .lab-panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--violet); }
+  .lab-panel output { color: var(--lilac); }
+  .lab-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+  .lab-row:last-child { margin-bottom: 0; }
+  .lab-panel button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); }
+  .lab-panel button, .lab-toggle { font: inherit; color: var(--fg); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px 6px; cursor: pointer; }
+  .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; background: rgba(14,14,18,.76); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 10px 14px 8px; }
+  .panel-closed .lab-toggle { display: block; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--lilac); outline-offset: 2px; }
+</style>
+</head>
+<body class="panel-closed">
+<!--MENU-->
+<div id="bg" aria-hidden="true"></div>
+<video class="lz-src" muted loop playsinline autoplay preload="auto" aria-hidden="true" tabindex="-1">
+  <source src="/lab/zraloci/hejno.mp4" type="video/mp4">
+  <source src="/lab/zraloci/hejno.webm" type="video/webm">
+</video>
+
+<main class="lz-page">
+  <section class="lz-sec lz-hero">
+    <div class="lz-card">
+      <span class="lz-num">Laboratoř</span>
+      <h1>Hejno po celé stránce</h1>
+      <p>Žraloci z částic plavou v každém úseku stránky. Kam scrolluješ, tam plavou i oni.</p>
+      <p class="lz-hint">Scrolluj dolů ↓</p>
+    </div>
+  </section>
+  <section class="lz-sec">
+    <div class="lz-card">
+      <span class="lz-num">01</span>
+      <h2>Hladina</h2>
+      <p>Žraloci nejsou pozadí jedné sekce. Jsou všude, kam se na stránce posuneš.</p>
+    </div>
+  </section>
+  <section class="lz-sec">
+    <div class="lz-card">
+      <span class="lz-num">02</span>
+      <h2>Proud</h2>
+      <p>Scroll je strhne s sebou: čím rychleji jedeš, tím silněji plavou za tebou. Když se zastavíš, ještě kus doplují a zase si plavou po svém.</p>
+    </div>
+  </section>
+  <section class="lz-sec">
+    <div class="lz-card">
+      <span class="lz-num">03</span>
+      <h2>Bloudění</h2>
+      <p>Každá skupina žraloků bloudí po vlastní dráze. Někteří vyplavou z obrazu a vrátí se odjinud.</p>
+    </div>
+  </section>
+  <section class="lz-sec">
+    <div class="lz-card">
+      <span class="lz-num">04</span>
+      <h2>Hloubka</h2>
+      <p>Hejna plavou v různých hloubkách. Kurzorem nebo prstem je rozfoukáš, kamera se nakloní podle směru scrollu.</p>
+    </div>
+  </section>
+  <section class="lz-sec">
+    <div class="lz-card">
+      <span class="lz-num">05</span>
+      <h2>Dno</h2>
+      <p>Konec stránky. Zkus to zpátky nahoru, hejno se otočí s tebou.</p>
+    </div>
+  </section>
+</main>
+
+<aside class="lab-panel" aria-label="Nastavení hejna">
+  <h2>Hejno po celé stránce</h2>
+  <p>Ladění žraloků z částic. Nastavení, které sedí, zkopíruj a pošli.</p>
+  <label>Plavou za scrollem <output></output><input type="range" min="-1" max="1.5" step=".05" data-set="follow"></label>
+  <label>Setrvačnost (s) <output></output><input type="range" min=".2" max="3" step=".1" data-set="lag"></label>
+  <label>Náhodné bloudění <output></output><input type="range" min="0" max="2" step=".05" data-set="wander"></label>
+  <label>Velikost žraloků <output></output><input type="range" min=".4" max="2" step=".05" data-set="tile"></label>
+  <label>Velikost částic <output></output><input type="range" min=".4" max="2.5" step=".05" data-set="size"></label>
+  <label>Hustota (míň = rychlejší) <output></output><input type="range" min=".5" max="1.6" step=".1" data-set="density"></label>
+  <label>Žraloci vystoupí dopředu <output></output><input type="range" min="0" max="4" step=".1" data-set="depth"></label>
+  <label>Různé hloubky hejn <output></output><input type="range" min="0" max="6" step=".1" data-set="layers"></label>
+  <label>Zářící obrysy <output></output><input type="range" min="0" max="2" step=".05" data-set="edge"></label>
+  <label>Rozfoukání kurzorem <output></output><input type="range" min="0" max="2.5" step=".05" data-set="blow"></label>
+  <label>Náklon kamery (°) <output></output><input type="range" min="0" max="35" step="1" data-set="tilt"></label>
+  <label>Rychlost videa <output></output><input type="range" min=".25" max="2" step=".05" data-set="speed"></label>
+  <div class="lab-row"><button type="button" id="colors">Barvy webu</button><button type="button" id="play">Pauza</button></div>
+  <div class="lab-row"><button type="button" id="copy">Zkopírovat nastavení</button><button type="button" id="panel-toggle">Skrýt panel</button></div>
+</aside>
+<button type="button" class="lab-toggle">Panel</button>
+
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/lab-zraloci.js" defer></script>
+</body>
+</html>

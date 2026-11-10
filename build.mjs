@@ -38,7 +38,7 @@ for (const f of ['assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js',
 }
 // global menu (Gooey Navbar in glass), page transitions and the shared site script on every page.
 // The menu is server-rendered into every page (links work at once), its Tailwind inlined; menu.js hydrates it later.
-const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', 'lab/pozadi/index.html', 'lab/kamera/index.html', 'lab/video/index.html', ...works.map(w => `prace/${w.slug}/index.html`)];
+const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', 'lab/pozadi/index.html', 'lab/kamera/index.html', 'lab/video/index.html', 'lab/zraloci/index.html', ...works.map(w => `prace/${w.slug}/index.html`)];
 {
   buildSync({ entryPoints: ['app/menu/ssr.jsx'], bundle: true, jsx: 'automatic', platform: 'node', packages: 'external', format: 'esm',
     define: { 'process.env.NODE_ENV': '"production"' }, outfile: 'menu-ssr.tmp.mjs', logLevel: 'warning' });
@@ -79,6 +79,7 @@ buildSync({ entryPoints: ['app/home/particles.js'], bundle: true, minify: true, 
 buildSync({ entryPoints: ['app/home/particles-core.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/home-particles-core.js', legalComments: 'none', logLevel: 'warning' });
 // lab: the 3D background study (/lab/pozadi/, noindex, not linked from the site)
 buildSync({ entryPoints: ['app/lab/kamera.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-kamera.js', legalComments: 'none', logLevel: 'warning' });
+buildSync({ entryPoints: ['app/lab/zraloci.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-zraloci.js', legalComments: 'none', logLevel: 'warning' });
 buildSync({ entryPoints: ['app/lab/video.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-video.js', legalComments: 'none', logLevel: 'warning' });
 buildSync({ entryPoints: ['app/lab/pozadi.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-pozadi.js', legalComments: 'none', logLevel: 'warning' });
 // the menu comes alive (hover liquid) once the page is idle: site.js loads it
@@ -181,6 +182,7 @@ stamp('assets/js/site.js', ['/assets/js/menu.js']);
 stamp('lab/pozadi/index.html', ['/assets/js/lab-pozadi.js']);
 stamp('lab/kamera/index.html', ['/assets/js/lab-kamera.js']);
 stamp('lab/video/index.html', ['/assets/vendor/gsap.min.js', '/assets/js/lab-video.js']);
+stamp('lab/zraloci/index.html', ['/assets/vendor/gsap.min.js', '/assets/js/lab-zraloci.js']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);
 for (const w of works) stamp(`prace/${w.slug}/index.html`, ['/assets/css/detail.css', '/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/detail.js', '/assets/js/detail-web.js', '/assets/js/detail-tisk.js', '/assets/js/detail-tisk.css'].filter(r => fs.existsSync(path.join('dist', r.slice(1)))));
 

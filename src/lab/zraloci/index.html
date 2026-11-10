@@ -16,7 +16,6 @@
   body { margin: 0; color: var(--fg); font-family: var(--font); letter-spacing: .03em; background: #0a0a0a; }
   #bg { position: fixed; inset: 0; z-index: 0; }
   #bg canvas { display: block; width: 100% !important; height: 100% !important; }
-  .lz-src { position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
   /* the page: sections over the sea of sharks */
   .lz-page { position: relative; z-index: 1; }
@@ -55,17 +54,13 @@
 <body class="panel-closed">
 <!--MENU-->
 <div id="bg" aria-hidden="true"></div>
-<video class="lz-src" muted loop playsinline autoplay preload="auto" aria-hidden="true" tabindex="-1">
-  <source src="/lab/zraloci/hejno.mp4" type="video/mp4">
-  <source src="/lab/zraloci/hejno.webm" type="video/webm">
-</video>
 
 <main class="lz-page">
   <section class="lz-sec lz-hero">
     <div class="lz-card">
       <span class="lz-num">Laboratoř</span>
-      <h1>Hejno po celé stránce</h1>
-      <p>Žraloci z částic plavou v každém úseku stránky. Když scrolluješ, odplavou pryč. Když zastavíš, vrátí se z okrajů.</p>
+      <h1>Žraloci po celé stránce</h1>
+      <p>Pár žraloků z částic plave stránkou. Když scrolluješ, uplavou pryč. Když zastavíš, hned zase někdo připluje.</p>
       <p class="lz-hint">Scrolluj dolů ↓</p>
     </div>
   </section>
@@ -80,51 +75,46 @@
     <div class="lz-card">
       <span class="lz-num">02</span>
       <h2>Úprk</h2>
-      <p>Jakmile se stránka rozjede, hejno odplave pryč z obrazovky. Zastav a žraloci se hned začnou vracet z okrajů.</p>
+      <p>Jakmile se stránka rozjede, každý žralok se otočí k nejbližšímu okraji a zmizí. Zastav a hned připlave další.</p>
     </div>
   </section>
   <section class="lz-sec">
     <div class="lz-card">
       <span class="lz-num">03</span>
-      <h2>Bloudění</h2>
-      <p>Každá skupina žraloků bloudí po vlastní dráze. Někteří vyplavou z obrazu a vrátí se odjinud.</p>
+      <h2>Odnikud nikam</h2>
+      <p>Každý žralok připluje zpoza okraje, propluje stránkou po vlastní dráze a zmizí jinde.</p>
     </div>
   </section>
   <section class="lz-sec">
     <div class="lz-card">
       <span class="lz-num">04</span>
       <h2>Hloubka</h2>
-      <p>Hejna plavou v různých hloubkách. Kurzorem nebo prstem je rozfoukáš, kamera se nakloní podle směru scrollu.</p>
+      <p>Žraloci plavou v různých hloubkách, ocas jim kmitá do prostoru a při otočce se překulí. Kurzorem nebo prstem je rozfoukáš.</p>
     </div>
   </section>
   <section class="lz-sec">
     <div class="lz-card">
       <span class="lz-num">05</span>
       <h2>Dno</h2>
-      <p>Konec stránky. Zastav se a počkej, až se hejno vrátí.</p>
+      <p>Konec stránky. Zastav se a počkej, kdo připluje.</p>
     </div>
   </section>
 </main>
 
-<aside class="lab-panel" aria-label="Nastavení hejna">
-  <h2>Hejno po celé stránce</h2>
+<aside class="lab-panel" aria-label="Nastavení žraloků">
+  <h2>Žraloci po celé stránce</h2>
   <p>Ladění žraloků z částic. Nastavení, které sedí, zkopíruj a pošli.</p>
-  <label>Odplavou při scrollu <output></output><input type="range" min="0" max="1.5" step=".05" data-set="scatter"></label>
-  <label>Odplutí (s) <output></output><input type="range" min=".2" max="2" step=".1" data-set="leave"></label>
-  <label>Návrat po zastavení (s) <output></output><input type="range" min=".5" max="5" step=".1" data-set="back"></label>
-  <label>Posun moře se scrollem <output></output><input type="range" min="-1" max="1.5" step=".05" data-set="follow"></label>
-  <label>Setrvačnost (s) <output></output><input type="range" min=".2" max="3" step=".1" data-set="lag"></label>
-  <label>Náhodné bloudění <output></output><input type="range" min="0" max="2" step=".05" data-set="wander"></label>
-  <label>Velikost žraloků <output></output><input type="range" min=".4" max="2" step=".05" data-set="tile"></label>
+  <label>Počet žraloků najednou <output></output><input type="range" min="1" max="6" step="1" data-set="count"></label>
+  <label>Velikost žraloků <output></output><input type="range" min=".4" max="2" step=".05" data-set="scale"></label>
+  <label>Rychlost plavání <output></output><input type="range" min=".2" max="3" step=".05" data-set="speed"></label>
+  <label>Vlnění těla <output></output><input type="range" min="0" max="2.5" step=".05" data-set="wave"></label>
+  <label>Úprk při scrollu <output></output><input type="range" min=".3" max="2.5" step=".05" data-set="flee"></label>
+  <label>Návrat po zastavení (s) <output></output><input type="range" min="0" max="3" step=".05" data-set="back"></label>
   <label>Velikost částic <output></output><input type="range" min=".4" max="2.5" step=".05" data-set="size"></label>
-  <label>Hustota (míň = rychlejší) <output></output><input type="range" min=".5" max="1.6" step=".1" data-set="density"></label>
-  <label>Žraloci vystoupí dopředu <output></output><input type="range" min="0" max="4" step=".1" data-set="depth"></label>
-  <label>Různé hloubky hejn <output></output><input type="range" min="0" max="6" step=".1" data-set="layers"></label>
+  <label>Hustota částic (míň = rychlejší) <output></output><input type="range" min=".4" max="2" step=".1" data-set="density"></label>
   <label>Zářící obrysy <output></output><input type="range" min="0" max="2" step=".05" data-set="edge"></label>
   <label>Rozfoukání kurzorem <output></output><input type="range" min="0" max="2.5" step=".05" data-set="blow"></label>
-  <label>Náklon kamery (°) <output></output><input type="range" min="0" max="35" step="1" data-set="tilt"></label>
-  <label>Rychlost videa <output></output><input type="range" min=".25" max="2" step=".05" data-set="speed"></label>
-  <div class="lab-row"><button type="button" id="colors">Barvy webu</button><button type="button" id="play">Pauza</button></div>
+  <label>Náklon kamery (°) <output></output><input type="range" min="0" max="30" step="1" data-set="tilt"></label>
   <div class="lab-row"><button type="button" id="copy">Zkopírovat nastavení</button><button type="button" id="panel-toggle">Skrýt panel</button></div>
 </aside>
 <button type="button" class="lab-toggle">Panel</button>

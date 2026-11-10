@@ -65,7 +65,7 @@
     <div class="lz-card">
       <span class="lz-num">Laboratoř</span>
       <h1>Hejno po celé stránce</h1>
-      <p>Žraloci z částic plavou v každém úseku stránky. Kam scrolluješ, tam plavou i oni.</p>
+      <p>Žraloci z částic plavou v každém úseku stránky. Když scrolluješ, odplavou pryč. Když zastavíš, vrátí se z okrajů.</p>
       <p class="lz-hint">Scrolluj dolů ↓</p>
     </div>
   </section>
@@ -79,8 +79,8 @@
   <section class="lz-sec">
     <div class="lz-card">
       <span class="lz-num">02</span>
-      <h2>Proud</h2>
-      <p>Scroll je strhne s sebou: čím rychleji jedeš, tím silněji plavou za tebou. Když se zastavíš, ještě kus doplují a zase si plavou po svém.</p>
+      <h2>Úprk</h2>
+      <p>Jakmile se stránka rozjede, hejno odplave pryč z obrazovky. Zastav a žraloci se hned začnou vracet z okrajů.</p>
     </div>
   </section>
   <section class="lz-sec">
@@ -101,7 +101,7 @@
     <div class="lz-card">
       <span class="lz-num">05</span>
       <h2>Dno</h2>
-      <p>Konec stránky. Zkus to zpátky nahoru, hejno se otočí s tebou.</p>
+      <p>Konec stránky. Zastav se a počkej, až se hejno vrátí.</p>
     </div>
   </section>
 </main>
@@ -109,7 +109,10 @@
 <aside class="lab-panel" aria-label="Nastavení hejna">
   <h2>Hejno po celé stránce</h2>
   <p>Ladění žraloků z částic. Nastavení, které sedí, zkopíruj a pošli.</p>
-  <label>Plavou za scrollem <output></output><input type="range" min="-1" max="1.5" step=".05" data-set="follow"></label>
+  <label>Odplavou při scrollu <output></output><input type="range" min="0" max="1.5" step=".05" data-set="scatter"></label>
+  <label>Odplutí (s) <output></output><input type="range" min=".2" max="2" step=".1" data-set="leave"></label>
+  <label>Návrat po zastavení (s) <output></output><input type="range" min=".5" max="5" step=".1" data-set="back"></label>
+  <label>Posun moře se scrollem <output></output><input type="range" min="-1" max="1.5" step=".05" data-set="follow"></label>
   <label>Setrvačnost (s) <output></output><input type="range" min=".2" max="3" step=".1" data-set="lag"></label>
   <label>Náhodné bloudění <output></output><input type="range" min="0" max="2" step=".05" data-set="wander"></label>
   <label>Velikost žraloků <output></output><input type="range" min=".4" max="2" step=".05" data-set="tile"></label>

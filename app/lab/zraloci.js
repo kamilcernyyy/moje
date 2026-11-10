@@ -14,7 +14,10 @@ const narrow = innerWidth < 760;
 
 const S = {
   follow: 0.45, // how the sea moves with the scroll: 0 = stays on screen, 1 = swims ahead, -1 = scrolls away with the page
-  lag: 1.4, // seconds the sea needs to catch up with the scroll (inertia)
+  lag: 0.5, // seconds the sea needs to catch up with the scroll (inertia)
+  scatter: 1, // while the page scrolls, the sharks swim out of the screen
+  leave: 0.8, // seconds to swim out
+  back: 2.4, // seconds to swim back in once the scroll stops
   wander: 1, // every school's own random path
   tile: narrow ? 0.85 : 0.7, // size of the sharks (one tile of the sea, relative to the screen)
   size: 1.15, // point size (1 = one grid cell)
@@ -60,7 +63,7 @@ function run() {
     tVid: { value: tex }, uTime: { value: 0 }, uDpr: { value: renderer.dpr }, uPx: { value: 1 }, uView: { value: [1, 1] }, uCell: { value: [0, 0] },
     uSpacing: { value: 0.03 }, uTile: { value: [1, 1] }, uRot: { value: 0 }, uOff: { value: [0, 0] }, uTexel: { value: [1 / 720, 1 / 1280] },
     uSize: { value: S.size }, uDepth: { value: S.depth }, uLayers: { value: S.layers }, uEdge: { value: S.edge }, uWander: { value: S.wander },
-    uBlow: { value: 0 }, uPtr: { value: [0, 0, 0] }, uBrand: { value: 1 }, uOn: { value: reduce ? 1 : 0 },
+    uBlow: { value: 0 }, uPtr: { value: [0, 0, 0] }, uBrand: { value: 1 }, uScat: { value: 0 }, uOn: { value: reduce ? 1 : 0 },
     uA: { value: [82 / 255, 39 / 255, 1] }, uB: { value: [177 / 255, 158 / 255, 239 / 255] }
   };
 
@@ -68,7 +71,7 @@ function run() {
     vertex: /* glsl */ `#version 300 es
       in vec3 position; // x, y across the screen (-.5 … .5), random
       uniform mat4 viewMatrix, projectionMatrix; uniform sampler2D tVid;
-      uniform float uTime, uDpr, uPx, uSpacing, uSize, uDepth, uLayers, uEdge, uWander, uBlow, uBrand, uOn, uRot;
+      uniform float uTime, uDpr, uPx, uSpacing, uSize, uDepth, uLayers, uEdge, uWander, uBlow, uBrand, uScat, uOn, uRot;
       uniform vec2 uView, uCell, uTile, uOff, uTexel; uniform vec3 uPtr, uA, uB;
       out vec3 vC; out float vA;
       float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -107,6 +110,18 @@ function run() {
         vec3 p = vec3(p0, ink * ((h2 - .55) * uLayers + uDepth * (1. - .35 * edge))); // the paper stays one even plane
         p += .03 * vec3(sin(uTime * 1.3 + r * 40.), sin(uTime * 1.1 + r * 60.), sin(uTime * .9 + r * 80.));
 
+        // scrolling: every school swims out of the screen, away from the middle, on a slightly curved path; once the
+        // scroll stops they come straight back in from the edges (each a little sooner or later than the others)
+        vec2 cc = (cell + .5) * uTile - uOff;
+        vec2 dir = normalize(cc + (vec2(h, h3) - .5) * uTile * .6 + 1e-4);
+        float sc = smoothstep(0., 1., clamp(uScat * 1.35 - h * .35, 0., 1.));
+        float bend = (h2 - .5) * 1.4 * sc;
+        dir = mat2(cos(bend), sin(bend), -sin(bend), cos(bend)) * dir;
+        float reach = length(uView) * .55 + max(uTile.x, uTile.y) * .6;
+        float swim = smoothstep(0., .08, ink); // the sharks swim, the paper stays
+        p.xy += dir * sc * reach * swim;
+        p.z -= sc * 1.5 * swim;
+
         // the pointer blows the points apart
         vec2 d = p.xy - uPtr.xy; float dl = length(d);
         float bl = uBlow * exp(-dl * dl / .55);
@@ -121,7 +136,7 @@ function run() {
         gl_Position = projectionMatrix * mv;
 
         vec3 brand = mix(uA * .9, mix(uB, vec3(1.), .35), clamp(edge * uEdge * 1.3 + ink * .15, 0., 1.));
-        float aBrand = ink * (.5 + .5 * clamp(edge * uEdge, 0., 1.)) + .05 * (1. - ink);
+        float aBrand = ink * (.5 + .5 * clamp(edge * uEdge, 0., 1.)); // (the paper's dust is its own layer, below)
         vec3 cBrand = mix(vec3(.55, .5, .75), brand, ink);
         vec3 cOrig = mix(vec3(.93), rgb, fade) * (1. + edge * uEdge * .4);
         float aOrig = (1. - ink) * .7;
@@ -138,9 +153,37 @@ function run() {
   });
   program.setBlendFunc(gl.ONE, gl.ONE);
 
+  // the paper's faint dust: its own layer of the same points that never swims away, so the sharks leave no holes
+  const dust = new Program(gl, {
+    vertex: /* glsl */ `#version 300 es
+      in vec3 position;
+      uniform mat4 viewMatrix, projectionMatrix;
+      uniform float uTime, uDpr, uPx, uSpacing, uSize, uBlow, uBrand, uOn; uniform vec2 uView, uCell; uniform vec3 uPtr;
+      out float vA; out float vR;
+      void main() {
+        float r = position.z;
+        vec3 p = vec3((position.xy + (vec2(fract(r * 91.7), fract(r * 57.3)) - .5) * uCell) * uView, 0.);
+        p += .03 * vec3(sin(uTime * 1.3 + r * 40.), sin(uTime * 1.1 + r * 60.), sin(uTime * .9 + r * 80.));
+        vec2 d = p.xy - uPtr.xy; float dl = length(d);
+        float bl = uBlow * exp(-dl * dl / .55);
+        p.xy += d / max(dl, 1e-3) * bl * .7 * (.6 + .8 * r);
+        p.z += bl * (.8 + 1.4 * r);
+        vec4 mv = viewMatrix * vec4(p, 1.);
+        gl_Position = projectionMatrix * mv;
+        vA = .05 * uBrand * smoothstep(0., .25, uOn); vR = r;
+        gl_PointSize = vA < .004 ? 0. : clamp(uSize * uSpacing * uPx / -mv.z * .8, 1., 9. * uDpr);
+      }`,
+    fragment: /* glsl */ `#version 300 es
+      precision highp float; in float vA; in float vR; out vec4 o;
+      void main() { vec2 c = gl_PointCoord - .5; float r = dot(c, c); if (r > .25) discard;
+        o = vec4(vec3(.55, .5, .75) * (.75 + .5 * vR) * vA * smoothstep(.25, .02, r), 1.); }`,
+    uniforms: U, transparent: true, depthTest: false, depthWrite: false
+  });
+  dust.setBlendFunc(gl.ONE, gl.ONE);
+
   // the fixed grid of points over the screen (with a margin for the camera's lean)
   const M = 1.3;
-  let points = null;
+  let points = null, dusts = null;
   const grid = () => {
     const a = innerWidth / innerHeight;
     let cols = Math.round((narrow ? 170 : 300) * S.density * M), rows = Math.round((cols / a));
@@ -154,8 +197,11 @@ function run() {
     U.uView.value = [H * a * M, H * M];
     U.uCell.value = [1 / cols, 1 / rows];
     U.uSpacing.value = (H * a * M) / cols;
-    if (points) { points.setParent(null); points.geometry.remove(); }
-    points = new Mesh(gl, { geometry: new Geometry(gl, { position: { size: 3, data } }), program, mode: gl.POINTS, frustumCulled: false });
+    if (points) { points.setParent(null); dusts.setParent(null); points.geometry.remove(); }
+    const geometry = new Geometry(gl, { position: { size: 3, data } });
+    dusts = new Mesh(gl, { geometry, program: dust, mode: gl.POINTS, frustumCulled: false });
+    dusts.setParent(scene);
+    points = new Mesh(gl, { geometry, program, mode: gl.POINTS, frustumCulled: false });
     points.setParent(scene);
   };
   // one tile of the sea: the video's long side follows the screen's long side
@@ -185,7 +231,16 @@ function run() {
   const q = (k, d) => (gsap && !reduce ? gsap.quickTo(st, k, { duration: d, ease: 'power2.out' }) : v => { st[k] = v; });
   let toSy = q('sy', S.lag);
   const toYaw = q('yaw', 1.1), toPitch = q('pitch', 1.1), toBlow = q('blow', 0.7), toPx = q('px', 0.25), toPy = q('py', 0.25);
-  addEventListener('scroll', () => toSy(scrollY), { passive: true });
+  // scroll on: the sharks swim away; scroll stopped: right away they start swimming back in from the edges
+  let leaving = false, still = 0;
+  st.scat = 0;
+  const comeBack = () => { leaving = false; if (gsap) gsap.to(st, { scat: 0, duration: S.back, ease: 'power2.out', overwrite: true }); else st.scat = 0; };
+  addEventListener('scroll', () => {
+    toSy(scrollY);
+    if (reduce) return;
+    if (!leaving) { leaving = true; if (gsap) gsap.to(st, { scat: 1, duration: S.leave, ease: 'power2.in', overwrite: true }); else st.scat = 1; }
+    clearTimeout(still); still = setTimeout(comeBack, 140);
+  }, { passive: true });
   let lean = { x: 0, y: 0 };
   const off = el => el && el.closest && el.closest('.lab-panel, .lab-toggle, .gm');
   addEventListener('pointermove', e => {
@@ -243,6 +298,7 @@ function run() {
     camera.lookAt([0, 0, 0]);
     camera.updateMatrixWorld();
     pointer();
+    U.uScat.value = st.scat * S.scatter;
     U.uTime.value = time; U.uBlow.value = st.blow * S.blow;
     U.uBrand.value += ((VIEW.brand ? 1 : 0) - U.uBrand.value) * 0.08;
     renderer.render({ scene, camera });

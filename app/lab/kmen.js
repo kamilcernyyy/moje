@@ -14,14 +14,14 @@ const narrow = innerWidth < 760;
 
 const S = {
   orbit: 90, // camera turn per screen of scroll (deg)
-  angle: narrow ? 16 : 26, // how far a section is turned when it comes in / leaves (deg)
-  count: narrow ? 6 : 8, // sharks around the trunk (spread over its whole height)
+  angle: 16, // how far a section is turned when it comes in / leaves (deg)
+  count: 6, // sharks around the trunk (spread over its whole height)
   scale: 1, // shark size
   speed: 1, // swimming speed
   radius: 1, // how far from the trunk they circle
   boost: 1.5, // how much the scroll hurries them on
-  wave: 1, // body waving
-  size: 1 // particle size (trunk, sharks, dust)
+  wave: 0.4, // body waving
+  size: 0.4 // particle size (trunk, sharks, dust)
 };
 const MAX = 14;
 
@@ -37,8 +37,8 @@ const VIOLET = [82 / 255, 39 / 255, 1], LILAC = [177 / 255, 158 / 255, 239 / 255
 const resize = () => { renderer.setSize(innerWidth, innerHeight); camera.perspective({ aspect: innerWidth / innerHeight }); };
 addEventListener('resize', resize); resize();
 // colours: 1 = original (the photo's moss, the woodcut's black-and-white), 0 = site colours; particle size for all
-const COL = { trunk: 1, shark: 0, mode: 'smisene' };
-const SIZE = { value: 1 };
+const COL = { trunk: 0, shark: 0, mode: 'web' };
+const SIZE = { value: 0.4 };
 const progs = [];
 
 // ---------- the trunk from the photo (as in the camera lab) ----------

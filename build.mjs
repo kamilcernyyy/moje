@@ -39,13 +39,13 @@ for (const f of ['assets/js/intro.js', 'o-mne/loader.js', 'assets/js/flight.js',
 // global menu (Gooey Navbar in glass), page transitions and the shared site script on every page.
 // The menu is server-rendered into every page (links work at once), its Tailwind inlined; menu.js hydrates it later.
 // lab pages: a switcher between all the studies, bottom right (plain <details>, no script)
-const LABS = [['pozadi', '3D pozadí'], ['kamera', 'Kamera a strom'], ['video', 'Video z částic'], ['zraloci', 'Žraloci po stránce'], ['kmen', 'Žraloci kolem kmene'], ['chobotnice', 'Chobotnice'], ['meduza', 'Medúza'], ['manty', 'Manty'], ['kladivoun', 'Kladivoun'], ['das', 'Ďas']];
+const LABS = [['pozadi', '3D pozadí'], ['kamera', 'Kamera a strom'], ['video', 'Video z částic'], ['zraloci', 'Žraloci po stránce'], ['kmen', 'Žraloci kolem kmene'], ['chobotnice', 'Chobotnice'], ['meduza', 'Medúza'], ['manty', 'Manty'], ['kladivoun', 'Kladivoun'], ['das', 'Ďas'], ['tunel', 'Tunel se zvířaty']];
 const labNav = f => {
   const here = f.split('/')[1];
   const links = LABS.map(([k, n]) => `<a href="/lab/${k}/"${k === here ? ' aria-current="page"' : ''}>${n}</a>`).join('');
   return `<style>.lab-nav{position:fixed;z-index:52;right:16px;bottom:16px;font:400 16px/1 "Odibee Sans CZ","Odibee Sans","Arial Narrow",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#f2f2f3}.lab-nav summary{list-style:none;cursor:pointer;padding:10px 14px 8px;border-radius:999px;background:rgba(14,14,18,.76);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}.lab-nav summary::-webkit-details-marker{display:none}.lab-nav[open] summary{background:#5227FF;border-color:#5227FF}.lab-nav div{position:absolute;right:0;bottom:calc(100% + 8px);display:grid;gap:4px;min-width:210px;padding:8px;border-radius:18px;background:rgba(14,14,18,.86);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}.lab-nav a{display:block;padding:9px 12px 7px;border-radius:999px;color:#f2f2f3;text-decoration:none}.lab-nav a:hover{background:rgba(255,255,255,.08)}.lab-nav a[aria-current]{color:#B19EEF;background:rgba(82,39,255,.22)}.lab-nav summary:focus-visible,.lab-nav a:focus-visible{outline:2px solid #B19EEF;outline-offset:2px}</style><details class="lab-nav"><summary>Laboratoř ▴</summary><div>${links}</div></details>`;
 };
-const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', 'lab/pozadi/index.html', 'lab/kamera/index.html', 'lab/video/index.html', 'lab/zraloci/index.html', 'lab/kmen/index.html', 'lab/chobotnice/index.html', 'lab/meduza/index.html', 'lab/manty/index.html', 'lab/kladivoun/index.html', 'lab/das/index.html', ...works.map(w => `prace/${w.slug}/index.html`)];
+const htmlPages = ['index.html', 'prace/index.html', 'o-mne/index.html', '404.html', 'lab/pozadi/index.html', 'lab/kamera/index.html', 'lab/video/index.html', 'lab/zraloci/index.html', 'lab/kmen/index.html', 'lab/chobotnice/index.html', 'lab/meduza/index.html', 'lab/manty/index.html', 'lab/kladivoun/index.html', 'lab/das/index.html', 'lab/tunel/index.html', ...works.map(w => `prace/${w.slug}/index.html`)];
 {
   buildSync({ entryPoints: ['app/menu/ssr.jsx'], bundle: true, jsx: 'automatic', platform: 'node', packages: 'external', format: 'esm',
     define: { 'process.env.NODE_ENV': '"production"' }, outfile: 'menu-ssr.tmp.mjs', logLevel: 'warning' });
@@ -87,6 +87,7 @@ buildSync({ entryPoints: ['app/home/particles.js'], bundle: true, minify: true, 
 buildSync({ entryPoints: ['app/home/particles-core.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/home-particles-core.js', legalComments: 'none', logLevel: 'warning' });
 // lab: the 3D background study (/lab/pozadi/, noindex, not linked from the site)
 buildSync({ entryPoints: ['app/lab/kamera.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-kamera.js', legalComments: 'none', logLevel: 'warning' });
+buildSync({ entryPoints: ['app/lab/tunel.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-tunel.js', legalComments: 'none', logLevel: 'warning' });
 buildSync({ entryPoints: ['app/lab/meduza.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-meduza.js', legalComments: 'none', logLevel: 'warning' });
 buildSync({ entryPoints: ['app/lab/manty.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-manty.js', legalComments: 'none', logLevel: 'warning' });
 buildSync({ entryPoints: ['app/lab/kladivoun.js'], bundle: true, minify: true, format: 'iife', target: 'es2020', outfile: 'dist/assets/js/lab-kladivoun.js', legalComments: 'none', logLevel: 'warning' });
@@ -203,6 +204,7 @@ stamp('lab/meduza/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/Sc
 stamp('lab/manty/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/lab-manty.js']);
 stamp('lab/kladivoun/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/lab-kladivoun.js']);
 stamp('lab/das/index.html', ['/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/lab-das.js']);
+stamp('lab/tunel/index.html', ['/assets/vendor/gsap.min.js', '/assets/js/lab-tunel.js']);
 for (const f of htmlPages) stamp(f, ['/assets/js/site.js']);
 for (const w of works) stamp(`prace/${w.slug}/index.html`, ['/assets/css/detail.css', '/assets/vendor/gsap.min.js', '/assets/vendor/ScrollTrigger.min.js', '/assets/js/detail.js', '/assets/js/detail-web.js', '/assets/js/detail-tisk.js', '/assets/js/detail-tisk.css'].filter(r => fs.existsSync(path.join('dist', r.slice(1)))));
 

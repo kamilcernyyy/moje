@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratoř: ďas | Grafysta</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Pracovní laboratoř: ďas z částic v hlubině, svítící vábnička, stránka se scrollem tmavne.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-display: swap; }
+  :root { color-scheme: dark; --fg: #f2f2f3; --mute: rgba(242,242,243,.66); --lilac: #B19EEF; --violet: #5227FF; --line: rgba(255,255,255,.18);
+    --font: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; --persp: 1400px; }
+  html, body { margin: 0; background: #0a0a0a; color: var(--fg); font-family: var(--font); }
+  #bg { position: fixed; inset: 0; z-index: 0; }
+  #bg canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  /* each section is its own little 3D stage; only the panel inside turns (fixed and sticky things stay outside) */
+  .ks { position: relative; z-index: 1; }
+  .ks-sec { min-height: 100svh; display: grid; place-items: center; padding: 12vh max(20px, 6vw); box-sizing: border-box; perspective: var(--persp); perspective-origin: 50% 50%; }
+  .ks-panel { width: min(1100px, 100%); transform-style: preserve-3d; will-change: transform; text-transform: uppercase; }
+  .ks h1, .ks h2 { margin: 0; font-weight: 400; line-height: .9; letter-spacing: .01em; }
+  .ks h1 { font-size: clamp(60px, 11vw, 168px); text-align: center; }
+  .ks h2 { font-size: clamp(48px, 8vw, 112px); }
+  .ks p { margin: 14px 0 0; max-width: 32ch; font-size: clamp(18px, 2vw, 24px); line-height: 1.15; letter-spacing: .04em; color: var(--mute); }
+  .ks-eyebrow { display: block; margin-bottom: 10px; font-size: 16px; letter-spacing: .3em; color: var(--lilac); }
+  .ks-split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+  .ks-card { padding: 28px; border-radius: 26px; background: rgba(20,20,24,.5); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); }
+  .ks-card strong { font-weight: 400; font-size: 34px; }
+  .ks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
+  .ks-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; display: block; }
+  .ks-btns { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+  .ks-btn { display: inline-block; padding: 16px 26px 13px; border-radius: 999px; color: #fff; text-decoration: none; font-size: 22px; letter-spacing: .05em;
+    background: rgba(20,20,24,.5); border: 1px solid var(--line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .ks-btn--main { background: var(--violet); border-color: var(--violet); }
+  .ks-center { text-align: center; } .ks-center p { margin-left: auto; margin-right: auto; } .ks-center .ks-btns { justify-content: center; }
+  @media (max-width: 760px) { .ks-split { grid-template-columns: 1fr; gap: 22px; } .ks-grid { gap: 8px; } .ks-card strong { font-size: 28px; } }
+
+  /* panel */
+  .lab-panel { position: fixed; z-index: 50; left: 16px; bottom: 16px; width: min(320px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
+    padding: 14px 16px 16px; border-radius: 20px; background: rgba(14,14,18,.76); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); font: 400 16px/1.1 var(--font); letter-spacing: .05em; text-transform: uppercase; }
+  .panel-closed .lab-panel { display: none; }
+  .lab-panel h2 { margin: 2px 0 12px; font-weight: 400; font-size: 22px; }
+  .lab-panel label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 0 0 9px; font-size: 15px; }
+  .lab-panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--violet); }
+  .lab-panel output { color: var(--lilac); }
+  .lab-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .lab-panel button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); }
+  .lab-panel button, .lab-toggle { font: inherit; color: var(--fg); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px 6px; cursor: pointer; }
+  .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; background: rgba(14,14,18,.76); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 10px 14px 8px; }
+  .panel-closed .lab-toggle { display: block; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--lilac); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .ks-panel { transform: none !important; opacity: 1 !important; } }
+</style>
+</head>
+<body>
+<script>if (matchMedia("(max-width: 760px)").matches) document.body.classList.add("panel-closed");</script>
+<!--MENU-->
+<div id="bg" aria-hidden="true"></div>
+
+<main class="ks">
+  <section class="ks-sec"><div class="ks-panel ks-center">
+    <h1>Váš grafický<br>stylista.</h1>
+    <p>Scrolluj do hloubky. Čím níž, tím víc tma, svítí jen vábnička ďasa. Ďas pluje za kurzorem, a když mu ho strčíš k tlamě, chňapne.</p>
+  </div></section>
+
+  <section class="ks-sec"><div class="ks-panel ks-split">
+    <div><span class="ks-eyebrow">01 · Weby</span><h2>Weby na míru</h2><p>Rychlé, krásné a dohledatelné. Od prvního náčrtu až po spuštění.</p></div>
+    <div class="ks-card"><strong>Doe &amp; Deer</strong><p>Skleněná karta jako na webu. Při natočení je vidět, jak drží v prostoru.</p>
+      <div class="ks-btns"><a class="ks-btn ks-btn--main" href="/prace/dd-sirup/">Zobrazit práci</a></div></div>
+  </div></section>
+
+  <section class="ks-sec"><div class="ks-panel">
+    <span class="ks-eyebrow">02 · Tisk a identita</span><h2>Etikety, loga, tiskoviny</h2>
+    <div class="ks-grid">
+      <img src="/prace/dd-sirup/kus-1.webp" alt="Etiketa Jahoda" loading="lazy">
+      <img src="/prace/dd-sirup/obal.webp" alt="Ilustrace Doe &amp; Deer" loading="lazy">
+      <img src="/prace/dd-sirup/kus-2.webp" alt="Etiketa Blue Curaçao" loading="lazy">
+    </div>
+  </div></section>
+
+  <section class="ks-sec"><div class="ks-panel ks-split">
+    <div class="ks-card"><strong>Motion</strong><p>Animace pro sítě, weby i prezentace. Pohyb, který drží značku pohromadě.</p></div>
+    <div><span class="ks-eyebrow">03 · Motion</span><h2>Pohyb a 3D</h2><p>Kamera tady dělá další kus oběhu.</p></div>
+  </div></section>
+
+  <section class="ks-sec"><div class="ks-panel ks-center">
+    <span class="ks-eyebrow">04 · Spolupráce</span><h2>Pojďme na to</h2>
+    <p>Dno. Tady už svítí skoro jen vábnička. Zkus kurzorem k tlamě.</p>
+    <div class="ks-btns"><a class="ks-btn ks-btn--main" href="/o-mne/">O mně</a><a class="ks-btn" href="/prace/">Mé práce</a></div>
+  </div></section>
+</main>
+
+<aside class="lab-panel" aria-label="Nastavení: Ďas">
+  <h2>Ďas</h2>
+  <label>Tma v hloubce <output></output><input type="range" min="0" max="1" step=".02" data-set="dark"></label>
+  <label>Světlo vábničky <output></output><input type="range" min="0" max="2.5" step=".05" data-set="light"></label>
+  <label>Zvědavost <output></output><input type="range" min=".1" max="3" step=".05" data-set="curious"></label>
+  <label>Pohyb těla <output></output><input type="range" min="0" max="2.5" step=".05" data-set="motion"></label>
+  <label>Velikost ďasa <output></output><input type="range" min=".4" max="2" step=".05" data-set="scale"></label>
+  <label>Velikost částic <output></output><input type="range" min=".2" max="3" step=".05" data-set="size"></label>
+  <label>Natočení sekcí (°) <output></output><input type="range" min="0" max="50" step="1" data-set="angle"></label>
+  <div class="lab-row" style="margin:0 0 10px"><button type="button" data-barvy="puvodni">Původní barvy</button><button type="button" data-barvy="web">Barvy webu</button></div>
+  <div class="lab-row"><button type="button" id="copy">Zkopírovat nastavení</button><button type="button" id="panel-toggle">Skrýt panel</button></div>
+</aside>
+<button type="button" class="lab-toggle">Panel</button>
+
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/assets/js/lab-das.js" defer></script>
+</body>
+</html>

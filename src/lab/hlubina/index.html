@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratoř: cesta do hlubiny | Grafysta</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Pracovní laboratoř: průchozí 3D svět – scrollem se jde stále hlouběji, od hladiny až na dno.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preload" href="/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Odibee Sans CZ"; src: url(/fonts/odibee-sans-cz/OdibeeSansCZ-Regular.woff2) format("woff2"); font-display: swap; }
+  :root { color-scheme: dark; --fg: #f2f2f3; --mute: rgba(242,242,243,.7); --lilac: #B19EEF; --violet: #5227FF; --line: rgba(255,255,255,.16);
+    --font: "Odibee Sans CZ", "Odibee Sans", "Arial Narrow", sans-serif; }
+  html { background: #0a0a0a; }
+  body { margin: 0; color: var(--fg); font-family: var(--font); letter-spacing: .03em; background: #0a0a0a; }
+  #bg { position: fixed; inset: 0; z-index: 0; }
+  #bg canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  /* panel (same as the other labs) */
+  .lab-panel { position: fixed; z-index: 50; left: 16px; bottom: 16px; width: min(320px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
+    padding: 14px 16px 16px; border-radius: 20px; background: rgba(14,14,18,.8); border: 1px solid var(--line); box-sizing: border-box;
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); font: 400 16px/1.1 var(--font); letter-spacing: .05em; text-transform: uppercase; }
+  .panel-closed .lab-panel { display: none; }
+  .lab-panel h2 { margin: 2px 0 6px; font-weight: 400; font-size: 22px; }
+  .lab-panel p { margin: 0 0 12px; font-size: 14px; line-height: 1.15; color: var(--mute); }
+  .lab-panel label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin: 0 0 9px; font-size: 15px; }
+  .lab-panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--violet); }
+  .lab-panel output { color: var(--lilac); }
+  .lab-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+  .lab-row:last-child { margin-bottom: 0; }
+  .lab-panel button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); }
+  .lab-panel button, .lab-toggle { font: inherit; color: var(--fg); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px 6px; cursor: pointer; }
+  .lab-toggle { position: fixed; z-index: 51; left: 16px; bottom: 16px; display: none; font: 400 16px/1 var(--font); letter-spacing: .05em; text-transform: uppercase; background: rgba(14,14,18,.76); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 10px 14px 8px; }
+  .panel-closed .lab-toggle { display: block; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--lilac); outline-offset: 2px; }
+  /* the copy over the tunnel (as the hero of "Mé práce"), it flies past the camera with the scroll */
+  .lt-track { height: 1400svh; }
+  .lt-hero { position: fixed; inset: 0; z-index: 1; display: grid; place-items: center; pointer-events: none; transform-origin: 50% 50%; }
+  .lt-hero-in { position: relative; display: grid; justify-items: center; gap: 22px; padding: 0 16px; text-align: center; }
+  .lt-veil { position: absolute; top: 50%; left: 50%; width: min(591px, 90vw); height: 420px; transform: translate(-50%, -50%); background: #0a0a0a; filter: blur(56px); }
+  .lt-tag { position: relative; color: var(--lilac); font-size: 18px; letter-spacing: .14em; text-transform: uppercase; }
+  .lt-hero h1 { position: relative; margin: 0; font-weight: 400; font-size: clamp(72px, 12vw, 176px); line-height: .85; text-transform: uppercase; }
+  .lt-hero p { position: relative; margin: 0; max-width: 460px; font-size: clamp(20px, 2vw, 26px); line-height: 1.15; color: var(--mute); }
+  /* depth gauge */
+  .lh-gauge { position: fixed; z-index: 40; right: 18px; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: auto 3px; gap: 12px; align-items: center; pointer-events: none; text-align: right; }
+  .lh-gauge-txt { display: grid; gap: 2px; }
+  #lh-depth { font-size: clamp(30px, 3.4vw, 44px); line-height: .9; }
+  #lh-zone { font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--lilac); }
+  .lh-track { position: relative; width: 3px; height: 34vh; border-radius: 3px; background: rgba(255,255,255,.14); overflow: hidden; }
+  #lh-bar { position: absolute; inset: 0; transform-origin: 50% 0; transform: scaleY(0); background: linear-gradient(#B19EEF, #5227FF); }
+  @media (max-width: 760px) { .lh-gauge { top: auto; bottom: 70px; transform: none; right: 14px; } .lh-track { height: 18vh; } }
+  .lt-end { position: absolute; left: 0; right: 0; bottom: 30svh; z-index: 1; text-align: center; font-size: clamp(28px, 4vw, 48px); text-transform: uppercase; color: var(--mute); }
+</style>
+</head>
+<body class="panel-closed">
+<!--MENU-->
+<div id="bg" aria-hidden="true"></div>
+<div class="lt-hero">
+  <div class="lt-hero-in">
+    <div class="lt-veil" aria-hidden="true"></div>
+    <span class="lt-tag">Laboratoř: cesta do hlubiny</span>
+    <h1>Mé práce</h1>
+    <p>Průchozí svět: scrolluj a ponoř se od hladiny přes zatopený prales, kelp a šero až do hlubiny. Kurzorem se rozhlížíš.</p>
+  </div>
+</div>
+<div class="lh-gauge" aria-hidden="true"><div class="lh-gauge-txt"><span id="lh-depth">0 m</span><span id="lh-zone">Hladina</span></div><div class="lh-track"><span id="lh-bar"></span></div></div>
+<main class="lt-track" style="position:relative">
+  <p class="lt-end">Dno. Scrolluj zpátky a vynoříš se.</p>
+</main>
+
+<aside class="lab-panel" aria-label="Nastavení cesty do hlubiny">
+  <h2>Cesta do hlubiny</h2>
+  <p>Skok na úsek</p>
+  <div class="lab-row"><button type="button" data-skok="0">Hladina</button><button type="button" data-skok="1">Prales</button><button type="button" data-skok="2">Kelp</button><button type="button" data-skok="3">Šero</button><button type="button" data-skok="4">Hlubina</button><button type="button" data-skok="5">Dno</button></div>
+  <p>Barvy</p>
+  <div class="lab-row"><button type="button" data-barva="puvodni">Původní</button><button type="button" data-barva="web">Barvy webu</button><button type="button" data-barva="smisene">Krajina původní, zvířata fialová</button></div>
+  <label>Počet zvířat <output></output><input type="range" min="0" max="1.6" step=".05" data-set="animals"></label>
+  <label>Světlo <output></output><input type="range" min="0" max="2.5" step=".05" data-set="light"></label>
+  <label>Vlnění v proudu <output></output><input type="range" min="0" max="3" step=".05" data-set="sway"></label>
+  <label>Velikost částic <output></output><input type="range" min=".3" max="3" step=".05" data-set="size"></label>
+  <div class="lab-row"><button type="button" id="copy">Zkopírovat nastavení</button><button type="button" id="panel-toggle">Skrýt panel</button></div>
+</aside>
+<button type="button" class="lab-toggle">Panel</button>
+
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script src="/assets/js/lab-hlubina.js" defer></script>
+</body>
+</html>
